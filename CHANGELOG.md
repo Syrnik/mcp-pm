@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Stage 6 — sprint read tools (Task #78.7): `pm_list_sprints`, `pm_get_sprint`.
+  Read-only, registered under the `pm.read` group. Sprints are **per-project**:
+  the pm schema still carries the `pm_sprint_project` M:N link and a matching
+  model from an abandoned cross-project design (a note on the task confirmed the
+  developer dropped it; leftover `$sprint['project_id']` references in
+  pmSprints.actions delete/complete are artifacts of that half-migration), so
+  the tools read through `pmSprintModel::getByProject()`/`getById()` but treat a
+  sprint as belonging to a single project. Both tools gate on project
+  membership. The card expands the linked project(s), the auto-fill source
+  statuses (with names) and the automation flags (auto-create-next, auto-close,
+  move-unfinished, auto-fill); listing is ordered active → planned → completed
+  like the pm UI. Moving a task in/out of a sprint stays with `pm_update_task`
+  (`sprint_id`, null = backlog) — no separate write tool. New helper class
+  `pmMcpSprintHelper`.
 - Stage 5 — wiki tools (Task #78.6): `pm_list_wiki_pages`, `pm_get_wiki_page`,
   `pm_create_wiki_page`, `pm_update_wiki_page`. The wiki has no domain class, so
   these mirror `pmWikiActions` and write via `pmWikiPageModel` directly. Access

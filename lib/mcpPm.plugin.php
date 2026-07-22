@@ -77,6 +77,10 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpGetWikiPageTool());
         $registry->addTool(new pmMcpCreateWikiPageTool());
         $registry->addTool(new pmMcpUpdateWikiPageTool());
+
+        // ===== Stage 6 — Sprints (2 tools, read-only) =====
+        $registry->addTool(new pmMcpListSprintsTool());
+        $registry->addTool(new pmMcpGetSprintTool());
     }
 
     /**
@@ -163,6 +167,22 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Read'),
                     'title'       => _wp('List task comments'),
                     'description' => _wp('List the comments of a task with author name and the internal flag.'),
+                ),
+
+                // ===== Read group — sprints (2 rights) =====
+                array(
+                    'name'        => 'pm_list_sprints',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List sprints'),
+                    'description' => _wp('List a project\'s sprints with their statuses and automation settings.'),
+                ),
+                array(
+                    'name'        => 'pm_get_sprint',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('Get sprint'),
+                    'description' => _wp('Read a sprint card: project, auto-fill statuses and automation settings.'),
                 ),
 
                 // ===== Tasks group — write (8 rights) =====
