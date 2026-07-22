@@ -55,6 +55,28 @@ Implements the first read tool of Stage 1. Task #78.2
 Use the `Task #X.Y` form (hash + dotted task number). This keeps the plugin's
 history traceable back to the project tracker.
 
+## Testing & fixtures
+
+`tests/seed.php` provisions a known **"MCP Test Project"** on the local install
+so checks don't need hand-rolled temporary rows. Run it from the htdocs root
+(or anywhere — it resolves its own path):
+
+```
+php wa-apps/mcp/plugins/pm/tests/seed.php
+```
+
+- It acts as contact **1** (the install admin) and is **idempotent**: each run
+  tears the project down and recreates it in a fixed state.
+- It seeds the `management` workflow, an admin member, a `v1.0` milestone,
+  `bug`/`feature` tags and seven tasks spanning every status and priority, with
+  a subtask, checklist, comment, tags and a time entry. Tasks are created via
+  `pmTask::create` (real domain path), not raw inserts.
+- **Discover by name, not id.** Reseeding assigns fresh auto-increment ids, so
+  resolve the project through `pm_list_projects` (or its name) rather than
+  hard-coding ids.
+- `tests/` is excluded from the release bundle (see below), so fixtures never
+  ship. Stage 7's integration tests build on this seed.
+
 ## Packaging
 
 `compress-app-plugin.php` builds the distributable `pm.tar.gz`. It honours
