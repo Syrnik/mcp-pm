@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Stage 3 — write tools for tasks (Task #78.4): `pm_create_task`,
+  `pm_update_task`, `pm_move_task`, `pm_assign_task`, `pm_add_task_comment`,
+  `pm_manage_checklist`, `pm_manage_watchers`, `pm_delete_task`. All mutations go
+  through the `pmTask` domain class (create/save/moveToStatus/addComment/
+  addParticipant/deleteWithCleanup), so permission checks, reference validation,
+  workflow transitions, activity logging and notifications are honoured. Nullable
+  references (assignee/milestone/sprint/parent) accept `0` to clear;
+  `pm_delete_task` requires explicit `confirm: true`. Write helpers added to
+  `pmMcpTaskHelper` (`requireProjectRole`, `loadTaskEntity`, `cardById`).
+  Comment gating fixes the pm REST quirk where the immutable-role `readonly`
+  flag also blocks admins. Rights registered under a new `pm.tasks` group.
 - Stage 2 — read tools for tasks (Task #78.3): `pm_list_tasks`, `pm_get_task`,
   `pm_list_task_comments`. `pm_list_tasks` reuses `pmTaskModel::getByStatus()`
   (project/status/assignee/sprint/milestone/type/priority/tag/search filters,

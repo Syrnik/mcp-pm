@@ -57,6 +57,48 @@ class pmMcpTaskHelper
     }
 
     /**
+     * The current user's role in a project, required for every write. pm's
+     * domain layer (pmTask::canEdit/canDelete/...) treats a missing project
+     * role as "no access" even for an app-admin, so writing needs an explicit
+     * membership. Fail with access_denied rather than letting the domain throw
+     * a generic waException later.
+     *
+     * @throws waRightsException when the user is not a member of the project.
+     * @return string  The role slug.
+     */
+    public static function requireProjectRole($project_id)
+    {
+        $role = pmHelper::getContactRole(wa()->getUser()->getId(), (int) $project_id);
+        if (!$role) {
+            throw new waRightsException(_wp('You must be a member of this project to perform this action.'));
+        }
+        return $role;
+    }
+
+    /**
+     * Load a task, check project access, and return it as a pmTask domain
+     * entity ready for mutation. The raw row is returned by reference-style
+     * out-param for callers that also need the array (e.g. type_slug).
+     *
+     * @param int        $task_id
+     * @param array|null $row_out  Receives the raw pm_task row.
+     * @return pmTask
+     */
+    public static function loadTaskEntity($task_id, ?array &$row_out = null)
+    {
+        $row_out = self::loadAccessibleTask($task_id);
+        return new pmTask($row_out);
+    }
+
+    /**
+     * Fresh full card for a task id, for returning the post-mutation state.
+     */
+    public static function cardById($task_id)
+    {
+        return self::formatTaskCard((new pmTaskModel())->getById((int) $task_id));
+    }
+
+    /**
      * Serialise a pm_task row for list output. Mirrors pmTaskListMethod's shape,
      * plus subtasks_count when getByStatus() supplied it.
      *

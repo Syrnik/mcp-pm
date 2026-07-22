@@ -55,6 +55,16 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpListTasksTool());
         $registry->addTool(new pmMcpGetTaskTool());
         $registry->addTool(new pmMcpListTaskCommentsTool());
+
+        // ===== Stage 3 — Write: tasks (8 tools) =====
+        $registry->addTool(new pmMcpCreateTaskTool());
+        $registry->addTool(new pmMcpUpdateTaskTool());
+        $registry->addTool(new pmMcpMoveTaskTool());
+        $registry->addTool(new pmMcpAssignTaskTool());
+        $registry->addTool(new pmMcpAddTaskCommentTool());
+        $registry->addTool(new pmMcpManageChecklistTool());
+        $registry->addTool(new pmMcpManageWatchersTool());
+        $registry->addTool(new pmMcpDeleteTaskTool());
     }
 
     /**
@@ -141,6 +151,64 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Read'),
                     'title'       => _wp('List task comments'),
                     'description' => _wp('List the comments of a task with author name and the internal flag.'),
+                ),
+
+                // ===== Tasks group — write (8 rights) =====
+                array(
+                    'name'        => 'pm_create_task',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Create task'),
+                    'description' => _wp('Create a task in a project (respects the task.create permission).'),
+                ),
+                array(
+                    'name'        => 'pm_update_task',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Update task'),
+                    'description' => _wp('Update task fields (respects per-field edit/assign/set_dates permissions).'),
+                ),
+                array(
+                    'name'        => 'pm_move_task',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Move task'),
+                    'description' => _wp('Change a task status through allowed workflow transitions.'),
+                ),
+                array(
+                    'name'        => 'pm_assign_task',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Assign task'),
+                    'description' => _wp('Set or clear a task assignee (respects the task.assign permission).'),
+                ),
+                array(
+                    'name'        => 'pm_add_task_comment',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Add task comment'),
+                    'description' => _wp('Add a comment to a task (public or internal).'),
+                ),
+                array(
+                    'name'        => 'pm_manage_checklist',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Manage checklist'),
+                    'description' => _wp('Add, rename, complete or delete task checklist items.'),
+                ),
+                array(
+                    'name'        => 'pm_manage_watchers',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Manage watchers'),
+                    'description' => _wp('Add or remove task watchers.'),
+                ),
+                array(
+                    'name'        => 'pm_delete_task',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Delete task'),
+                    'description' => _wp('Permanently delete a task and its dependents (requires confirm).'),
                 ),
             ),
         );
