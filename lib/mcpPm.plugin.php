@@ -50,6 +50,11 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpListProjectUsersTool());
         $registry->addTool(new pmMcpListTagsTool());
         $registry->addTool(new pmMcpListMilestonesTool());
+
+        // ===== Stage 2 — Read: tasks (3 tools) =====
+        $registry->addTool(new pmMcpListTasksTool());
+        $registry->addTool(new pmMcpGetTaskTool());
+        $registry->addTool(new pmMcpListTaskCommentsTool());
     }
 
     /**
@@ -113,6 +118,29 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Read'),
                     'title'       => _wp('List milestones'),
                     'description' => _wp('List the milestones of a project.'),
+                ),
+
+                // ===== Read group — tasks (3 rights) =====
+                array(
+                    'name'        => 'pm_list_tasks',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List tasks'),
+                    'description' => _wp('List tasks the user can access, filtered by project, status, assignee, sprint, milestone, type, priority, tag or search.'),
+                ),
+                array(
+                    'name'        => 'pm_get_task',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('Get task'),
+                    'description' => _wp('Read a full task card: tags, subtasks, participants, checklist, dependencies, custom fields, logged time and allowed transitions.'),
+                ),
+                array(
+                    'name'        => 'pm_list_task_comments',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List task comments'),
+                    'description' => _wp('List the comments of a task with author name and the internal flag.'),
                 ),
             ),
         );
