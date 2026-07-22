@@ -4,9 +4,9 @@ MCP tools for the Webasyst **Project Management** app (`wa-apps/pm`). Lets LLM
 agents work with projects, tasks, assignees, sprints, milestones and the
 project wiki through the MCP JSON-RPC protocol.
 
-> **Status: Stage 0 — scaffold.** This commit ships the plugin skeleton only
-> (bootstrap, shared tool base class, packaging). Tools are added across the
-> stages tracked in the "MCP for PM" project (#78.1 – #78.8).
+> **Status: Stage 1 complete.** Scaffold plus the 7 read tools for projects
+> and reference data (`pm.read` group) are implemented. Remaining tools are
+> added across the stages tracked in the "MCP for PM" project (#78.1 – #78.8).
 
 ## Architecture
 

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Stage 1 — read tools for projects and reference data (Task #78.2):
+  `pm_list_projects`, `pm_get_project`, `pm_list_statuses`, `pm_get_workflow`,
+  `pm_list_project_users`, `pm_list_tags`, `pm_list_milestones`. All results
+  are filtered by project membership (pm app-admins see every project). Shared
+  helpers `pmMcpProjectHelper` (access + serialisation) and
+  `pmMcpWorkflowHelper` (statuses + transition matrix). Rights registered
+  under the `pm.read` group.
+
 ## [0.1.0] - 2026-07-22
 
 ### Added

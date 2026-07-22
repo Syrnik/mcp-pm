@@ -42,9 +42,14 @@ class mcpPmPlugin extends mcpPlugin
      */
     public function registerTools($registry)
     {
-        // Stage 0 scaffold: no tools yet. Tools are added here by
-        // stages 1-6 (#78.2 – #78.7), e.g.:
-        //   $registry->addTool(new pmMcpListProjectsTool());
+        // ===== Stage 1 — Read: projects and reference data (7 tools) =====
+        $registry->addTool(new pmMcpListProjectsTool());
+        $registry->addTool(new pmMcpGetProjectTool());
+        $registry->addTool(new pmMcpListStatusesTool());
+        $registry->addTool(new pmMcpGetWorkflowTool());
+        $registry->addTool(new pmMcpListProjectUsersTool());
+        $registry->addTool(new pmMcpListTagsTool());
+        $registry->addTool(new pmMcpListMilestonesTool());
     }
 
     /**
@@ -58,12 +63,57 @@ class mcpPmPlugin extends mcpPlugin
         $groups['pm'] = array(
             'name'   => _wp('Project Management'),
             'rights' => array(
-                // Stage 0 scaffold: rights are added alongside their tools by
-                // stages 1-6. Groups (group / group_title) will be:
-                //   pm.read     - Read
-                //   pm.tasks    - Tasks
-                //   pm.projects - Projects
-                //   pm.wiki     - Wiki
+
+                // ===== Read group (7 rights) =====
+                array(
+                    'name'        => 'pm_list_projects',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List projects'),
+                    'description' => _wp('List projects the user has access to, optionally filtered by status.'),
+                ),
+                array(
+                    'name'        => 'pm_get_project',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('Get project'),
+                    'description' => _wp('Read a project card: properties, participants with roles, workflows and milestones.'),
+                ),
+                array(
+                    'name'        => 'pm_list_statuses',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List statuses'),
+                    'description' => _wp('List global task statuses and, optionally, a specific workflow\'s statuses and transitions.'),
+                ),
+                array(
+                    'name'        => 'pm_get_workflow',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('Get workflow'),
+                    'description' => _wp('Read the workflows of a project: statuses, local names and transition matrix.'),
+                ),
+                array(
+                    'name'        => 'pm_list_project_users',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List project users'),
+                    'description' => _wp('List the participants of a project with their roles.'),
+                ),
+                array(
+                    'name'        => 'pm_list_tags',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List tags'),
+                    'description' => _wp('List the tags defined in a project.'),
+                ),
+                array(
+                    'name'        => 'pm_list_milestones',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('List milestones'),
+                    'description' => _wp('List the milestones of a project.'),
+                ),
             ),
         );
     }
