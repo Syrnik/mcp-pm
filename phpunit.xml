@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="tests/init.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" colors="true">
+  <coverage>
+    <include>
+      <directory>lib</directory>
+    </include>
+    <exclude>
+      <directory>lib/config</directory>
+    </exclude>
+  </coverage>
+  <testsuites>
+    <testsuite name="mcp-pm">
+      <directory>tests</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

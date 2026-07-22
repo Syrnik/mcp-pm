@@ -140,6 +140,21 @@ abstract class pmMcpToolBase extends mcpTool
     }
 
     /**
+     * Read a boolean argument, tolerating the JSON true/false a client sends
+     * as well as the "1"/"0"/"true"/"false" strings some transports produce.
+     */
+    protected function argBool(array $args, $key, $default = false)
+    {
+        if (!array_key_exists($key, $args) || $args[$key] === null || $args[$key] === '') {
+            return (bool) $default;
+        }
+        if (is_bool($args[$key])) {
+            return $args[$key];
+        }
+        return filter_var($args[$key], FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
      * Current authenticated user's contact id. Always positive inside a tool
      * body because safeExecute() has already rejected anonymous callers.
      */

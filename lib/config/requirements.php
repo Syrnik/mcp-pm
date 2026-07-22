@@ -10,8 +10,12 @@ return array(
         'version' => '>=1.0.1',
         'strict'  => true,
     ),
-    'app.pm' => array(
+    'app.pm'  => array(
         'version' => '>=0.25.0',
         'strict'  => true,
+    ),
+    'php'     => array(
+        'version' => '>=7.4',
+        'strict'  => true
     ),
 );
