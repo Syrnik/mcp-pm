@@ -1,0 +1,25 @@
+name: PHP Compatibility
+
+on: [push, pull_request]
+
+jobs:
+  php_compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php_version: ["7.4", "8.0", "8.1", "8.2", "8.3", "8.4", "8.5"]
+      fail-fast: false  # продолжать проверку остальных версий при падении одной
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup PHP ${{ matrix.php_version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php_version }}
+
+      - name: Check PHP version
+        run: php -v
+
+      - name: List PHP files
+        run: find . -type f -name "*.php" -not -path "./lib/vendors/*" -print0 | xargs -0 -n1 -P4 php -l
