@@ -1,0 +1,433 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: mcp/plugins/pm\n"
+"POT-Creation-Date: 2026-07-22 13:29+0300\n"
+"PO-Revision-Date: \n"
+"Last-Translator: mcp/plugins/pm\n"
+"Language-Team: mcp/plugins/pm\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Language: en_US\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-Basepath: utf-8\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: .\n"
+
+msgid "Project not found."
+msgstr ""
+
+msgid "You are not a member of this project."
+msgstr ""
+
+msgid "You do not have access to the Project Management app."
+msgstr ""
+
+msgid "Only a project administrator can perform this action."
+msgstr ""
+
+msgid "Task not found."
+msgstr ""
+
+msgid "You are not a member of this task's project."
+msgstr ""
+
+msgid "You must be a member of this project to perform this action."
+msgstr ""
+
+msgid "This tool requires an authenticated user. The MCP token has no associated user (act_as = 0)."
+msgstr ""
+
+msgid "Database error. The action was not completed."
+msgstr ""
+
+msgid "Unexpected error. The action was not completed."
+msgstr ""
+
+msgid "Destructive action requires explicit \"confirm: true\" in the arguments."
+msgstr ""
+
+msgid "You do not have permission to view this project's wiki."
+msgstr ""
+
+msgid "You do not have permission to edit this project's wiki."
+msgstr ""
+
+msgid "Unknown role \"%s\" in access_roles."
+msgstr ""
+
+msgid "Project Management for MCP"
+msgstr ""
+
+msgid "MCP tools for the Project Management (pm) app: projects, tasks, assignees, sprints, milestones and wiki."
+msgstr ""
+
+msgid "Project Management"
+msgstr ""
+
+msgid "Read"
+msgstr ""
+
+msgid "List projects"
+msgstr ""
+
+msgid "List projects the user has access to, optionally filtered by status."
+msgstr ""
+
+msgid "Get project"
+msgstr ""
+
+msgid "Read a project card: properties, participants with roles, workflows and milestones."
+msgstr ""
+
+msgid "List statuses"
+msgstr ""
+
+msgid "List global task statuses and, optionally, a specific workflow's statuses and transitions."
+msgstr ""
+
+msgid "Get workflow"
+msgstr ""
+
+msgid "Read the workflows of a project: statuses, local names and transition matrix."
+msgstr ""
+
+msgid "List project users"
+msgstr ""
+
+msgid "List the participants of a project with their roles."
+msgstr ""
+
+msgid "List tags"
+msgstr ""
+
+msgid "List the tags defined in a project."
+msgstr ""
+
+msgid "List milestones"
+msgstr ""
+
+msgid "List the milestones of a project."
+msgstr ""
+
+msgid "List tasks"
+msgstr ""
+
+msgid "List tasks the user can access, filtered by project, status, assignee, sprint, milestone, type, priority, tag or search."
+msgstr ""
+
+msgid "Get task"
+msgstr ""
+
+msgid "Read a full task card: tags, subtasks, participants, checklist, dependencies, custom fields, logged time and allowed transitions."
+msgstr ""
+
+msgid "List task comments"
+msgstr ""
+
+msgid "List the comments of a task with author name and the internal flag."
+msgstr ""
+
+msgid "List sprints"
+msgstr ""
+
+msgid "List a project's sprints with their statuses and automation settings."
+msgstr ""
+
+msgid "Get sprint"
+msgstr ""
+
+msgid "Read a sprint card: project, auto-fill statuses and automation settings."
+msgstr ""
+
+msgid "Tasks"
+msgstr ""
+
+msgid "Create task"
+msgstr ""
+
+msgid "Create a task in a project (respects the task.create permission)."
+msgstr ""
+
+msgid "Update task"
+msgstr ""
+
+msgid "Update task fields (respects per-field edit/assign/set_dates permissions)."
+msgstr ""
+
+msgid "Move task"
+msgstr ""
+
+msgid "Change a task status through allowed workflow transitions."
+msgstr ""
+
+msgid "Assign task"
+msgstr ""
+
+msgid "Set or clear a task assignee (respects the task.assign permission)."
+msgstr ""
+
+msgid "Add task comment"
+msgstr ""
+
+msgid "Add a comment to a task (public or internal)."
+msgstr ""
+
+msgid "Manage checklist"
+msgstr ""
+
+msgid "Add, rename, complete or delete task checklist items."
+msgstr ""
+
+msgid "Manage watchers"
+msgstr ""
+
+msgid "Add or remove task watchers."
+msgstr ""
+
+msgid "Delete task"
+msgstr ""
+
+msgid "Permanently delete a task and its dependents (requires confirm)."
+msgstr ""
+
+msgid "Projects"
+msgstr ""
+
+msgid "Create project"
+msgstr ""
+
+msgid "Create a project (requires access to the Project Management app). The owner becomes a project admin."
+msgstr ""
+
+msgid "Update project"
+msgstr ""
+
+msgid "Update project properties and attached workflows (requires project admin rights)."
+msgstr ""
+
+msgid "Add project user"
+msgstr ""
+
+msgid "Add a participant with a role or change an existing member's role (requires project admin rights)."
+msgstr ""
+
+msgid "Remove project user"
+msgstr ""
+
+msgid "Remove a participant from a project (requires project admin rights and confirm)."
+msgstr ""
+
+msgid "Wiki"
+msgstr ""
+
+msgid "List wiki pages"
+msgstr ""
+
+msgid "List a project's wiki page tree, filtered by visibility (requires the wiki.view or wiki.edit permission)."
+msgstr ""
+
+msgid "Get wiki page"
+msgstr ""
+
+msgid "Read a wiki page with its content (requires the wiki.view permission and page visibility)."
+msgstr ""
+
+msgid "Create wiki page"
+msgstr ""
+
+msgid "Create a wiki section or article (requires the wiki.edit permission)."
+msgstr ""
+
+msgid "Update wiki page"
+msgstr ""
+
+msgid "Update or move a wiki page (requires the wiki.edit permission)."
+msgstr ""
+
+msgid "Add a participant to a project with a role, or update the role of an existing participant. Requires project administrator rights. Returns the updated participant list."
+msgstr ""
+
+msgid "contact_id is required."
+msgstr ""
+
+msgid "Contact not found."
+msgstr ""
+
+msgid "Unknown role \"%s\"."
+msgstr ""
+
+msgid "Add a comment to a task. Requires a non-readonly project role. Set is_internal=true for an internal (staff-only) note. Returns the created comment."
+msgstr ""
+
+msgid "Comment text is required."
+msgstr ""
+
+msgid "Your project role cannot add comments."
+msgstr ""
+
+msgid "Assign a task to a contact, or unassign it with assignee_contact_id = 0. The assignee must be a project participant. Requires the task.assign permission. Returns the updated task card."
+msgstr ""
+
+msgid "Create a project. Requires access to the Project Management app. The owner (defaults to the current user) is added as a project administrator. Returns the created project card."
+msgstr ""
+
+msgid "Project name is required."
+msgstr ""
+
+msgid "Owner contact not found."
+msgstr ""
+
+msgid "Unknown workflow \"%s\"."
+msgstr ""
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow. Returns the created task card."
+msgstr ""
+
+msgid "Task subject is required."
+msgstr ""
+
+msgid "workflow_id is required (the project has multiple workflows)."
+msgstr ""
+
+msgid "Create a wiki section or article in a project. Requires the wiki.edit permission. A \"section\" is a folder and holds no content. Returns the created page."
+msgstr ""
+
+msgid "Page title is required."
+msgstr ""
+
+msgid "Parent page not found in this project."
+msgstr ""
+
+msgid "Permanently delete a task and its subtasks, comments, tags and custom fields. Requires the task.delete permission and explicit confirm=true. This cannot be undone."
+msgstr ""
+
+msgid "Get a project card: properties, participants with roles, workflows and milestones. Requires project membership."
+msgstr ""
+
+msgid "Get a sprint card: project, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in the sprint's project."
+msgstr ""
+
+msgid "Sprint not found."
+msgstr ""
+
+msgid "You are not a member of this sprint's project."
+msgstr ""
+
+msgid "Get a full task card: description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
+msgstr ""
+
+msgid "Read a wiki page with its content. Requires the wiki.view or wiki.edit permission and that the page is visible to the caller."
+msgstr ""
+
+msgid "Wiki page not found."
+msgstr ""
+
+msgid "You are not allowed to view this wiki page."
+msgstr ""
+
+msgid "Get the workflows of a project: each workflow's statuses (with local names) and transition matrix. Requires project membership."
+msgstr ""
+
+msgid "List the milestones of a project. Requires project membership."
+msgstr ""
+
+msgid "List projects the current user has access to, optionally filtered by status (planned, active, completed)."
+msgstr ""
+
+msgid "List the participants of a project with their roles. Requires project membership."
+msgstr ""
+
+msgid "List a project's sprints (active first, then planned, then completed) with automation settings. Requires project membership. Backlog tasks are listed via pm_list_tasks with sprint_id=-1."
+msgstr ""
+
+msgid "List global task statuses. Pass workflow_id to also get that workflow's statuses (with local names) and transition matrix."
+msgstr ""
+
+msgid "Workflow not found."
+msgstr ""
+
+msgid "List the tags defined in a project. Requires project membership."
+msgstr ""
+
+msgid "List the comments of a task, oldest first, with author name and the internal flag. Requires membership of the task's project."
+msgstr ""
+
+msgid "List tasks the current user can access, filtered by project, status, assignee, sprint (-1 = backlog), milestone, type, priority, tag or a subject search. Paginated."
+msgstr ""
+
+msgid "List the wiki page tree of a project (metadata only, no content), filtered by the caller's visibility. Requires the wiki.view or wiki.edit permission."
+msgstr ""
+
+msgid "Manage a task checklist: add, rename, complete, uncomplete or delete an item. Requires the task.edit permission. Returns the updated checklist."
+msgstr ""
+
+msgid "You do not have permission to edit this task's checklist."
+msgstr ""
+
+msgid "item_id is required for this action."
+msgstr ""
+
+msgid "Checklist item not found on this task."
+msgstr ""
+
+msgid "text is required to add a checklist item."
+msgstr ""
+
+msgid "text is required to update a checklist item."
+msgstr ""
+
+msgid "Add or remove a task watcher. Managing other contacts requires the task.manage_watchers permission; a user may always remove themselves. Returns the task participants."
+msgstr ""
+
+msgid "You do not have permission to manage watchers."
+msgstr ""
+
+msgid "That contact is an assignee, not a watcher. Use pm_assign_task."
+msgstr ""
+
+msgid "That contact is not a watcher on this task."
+msgstr ""
+
+msgid "Move a task to another status, respecting the workflow transitions available to the caller. Requires the task.change_status permission. Returns the updated task card."
+msgstr ""
+
+msgid "Remove a participant from a project. Requires project administrator rights and confirm=true. The project owner cannot be removed. Returns the remaining participants."
+msgstr ""
+
+msgid "The project owner cannot be removed. Reassign ownership with pm_update_project first."
+msgstr ""
+
+msgid "This contact is not a member of the project."
+msgstr ""
+
+msgid "Update a project's properties (name, description, status, workflows, ...). Only the supplied fields change. Requires project administrator rights. Returns the updated project card."
+msgstr ""
+
+msgid "Project name cannot be empty."
+msgstr ""
+
+msgid "workflow_ids must be a non-empty list."
+msgstr ""
+
+msgid "Nothing to update: supply at least one field."
+msgstr ""
+
+msgid "Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields). Pass 0 for assignee/milestone/sprint/parent to clear them. Use pm_move_task to change status. Returns the updated task card."
+msgstr ""
+
+msgid "No fields to update."
+msgstr ""
+
+msgid "Update a wiki page: title, content, type, publication, access roles, or move it under another parent (parent_id=0 makes it top-level). Requires the wiki.edit permission. Returns the updated page."
+msgstr ""
+
+msgid "Page title cannot be empty."
+msgstr ""
+
+msgid "A page cannot be moved into itself."
+msgstr ""
+
+msgid "Invalid parent page (not in this project, or it is a descendant of this page)."
+msgstr ""

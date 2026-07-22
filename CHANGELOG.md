@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Stage 7 — tests, localization, release prep (Task #78.8). PHPUnit 9 suite
+  (`phpunit.xml`, `tests/init.php`): a smoke test (the whole 28-tool surface
+  registers, every tool has a matching right, schemas are well-formed),
+  DB-independent unit tests (argument coercers, schema validation, wiki access
+  roles and page-visibility logic) and live-DB integration tests for the
+  project, task, wiki and sprint tools (each runs as the install admin in a
+  throwaway project that is torn down afterwards). The bootstrap boots `pm`
+  before `mcp` so pm stays the current app for its static-cached config lookups
+  (`pmWorkflow`/`pmRoleModel`) without the argv-clobbering side effects of
+  `wa('pm', 1)`/`waSystem::setActive()` under the PHPUnit CLI. Full `mcp_pm`
+  localization: `locale/ru_RU` (139 Russian strings) and `locale/en_US`
+  generated via `php wa.php locale mcp/plugins/pm`; `.mo` files are compiled by
+  the release GitHub Action, not committed. README expanded with tests,
+  localization and token-setup sections. Verified end to end: with the plugin
+  enabled, `mcpToolRegistry::createDefault()` returns all 28 tools through the
+  `mcp_tool_registry_v1` event.
 - Stage 6 — sprint read tools (Task #78.7): `pm_list_sprints`, `pm_get_sprint`.
   Read-only, registered under the `pm.read` group. Sprints are **per-project**:
   the pm schema still carries the `pm_sprint_project` M:N link and a matching

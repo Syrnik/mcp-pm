@@ -55,11 +55,43 @@ Implements the first read tool of Stage 1. Task #78.2
 Use the `Task #X.Y` form (hash + dotted task number). This keeps the plugin's
 history traceable back to the project tracker.
 
-## Testing & fixtures
+## Testing
+
+PHPUnit 9 is used **globally** (no composer, no bundled phpunit). Run from the
+plugin root:
+
+```
+php /path/to/phpunit
+```
+
+- `phpunit.xml` — schema 9.3, `bootstrap="tests/init.php"`, coverage over `lib`
+  excluding `lib/config`.
+- `tests/init.php` — bootstrap. Boots the framework, then **`pm` first** and
+  `mcp` second, eager-loads the plugin classes and primes the workflow cache.
+  The order matters: the first app booted becomes the current app, and it must
+  stay `pm` so pm-relative config lookups (`pmHelper::getConfig` ->
+  `pmWorkflow` / `pmRoleModel`, which cache statically) resolve against the pm
+  app. Do **not** use `wa('pm', 1)` or `waSystem::setActive('pm')` in the
+  bootstrap — both re-initialise the system / reload the locale, which under the
+  PHPUnit CLI clobbers argv (PHPUnit then aborts with a usage message) or
+  fatals.
+- `tests/pmMcpSmokeTest.php` — the whole tool surface registers, every tool has
+  a matching right (right name == tool name), schemas are well-formed.
+- `tests/pmMcpSchemaTest.php` — DB-independent unit tests: argument coercers,
+  schema validation, wiki access-role and page-visibility logic.
+- `tests/pmMcpIntegrationTestCase.php` — abstract base for the integration
+  tests (does not end in `*Test.php`, so it is required from the bootstrap, not
+  auto-discovered). Runs as contact 1, creates a throwaway project in `setUp`
+  and tears everything down in `tearDown`.
+- `tests/pmMcp{Project,Task,Wiki,Sprint}ToolsTest.php` — integration tests that
+  drive the tools against the live DB.
+- Keep `.phpunit.result.cache` out of git (see `.gitignore`).
+
+### Fixture seeder
 
 `tests/seed.php` provisions a known **"MCP Test Project"** on the local install
-so checks don't need hand-rolled temporary rows. Run it from the htdocs root
-(or anywhere — it resolves its own path):
+for manual/exploratory checks (it is **not** part of the PHPUnit suite). Run it
+from the htdocs root (or anywhere — it resolves its own path):
 
 ```
 php wa-apps/mcp/plugins/pm/tests/seed.php
@@ -75,7 +107,25 @@ php wa-apps/mcp/plugins/pm/tests/seed.php
   resolve the project through `pm_list_projects` (or its name) rather than
   hard-coding ids.
 - `tests/` is excluded from the release bundle (see below), so fixtures never
-  ship. Stage 7's integration tests build on this seed.
+  ship.
+
+## Localization
+
+User-facing strings go through `_wp()` under the `mcp_pm` gettext domain
+(`locale/<lang>/LC_MESSAGES/mcp_pm.po`). Re-extract from the **install root**
+after changing strings:
+
+```
+php wa.php locale mcp/plugins/pm
+```
+
+- This (re)writes the `.po` files for every locale. Keep each `_wp()` string on
+  a **single line with no tabs** — the extractor mishandles multi-line and
+  tabbed strings.
+- Translate the new `msgid`s in `locale/ru_RU/LC_MESSAGES/mcp_pm.po`; `en_US`
+  can stay empty (gettext falls back to the English source `msgid`).
+- Do **not** commit `.mo` files — the release workflow compiles them from the
+  `.po` files (see below); they are git-ignored.
 
 ## Packaging
 

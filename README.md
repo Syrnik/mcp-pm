@@ -4,9 +4,9 @@ MCP tools for the Webasyst **Project Management** app (`wa-apps/pm`). Lets LLM
 agents work with projects, tasks, assignees, sprints, milestones and the
 project wiki through the MCP JSON-RPC protocol.
 
-> **Status: Stage 1 complete.** Scaffold plus the 7 read tools for projects
-> and reference data (`pm.read` group) are implemented. Remaining tools are
-> added across the stages tracked in the "MCP for PM" project (#78.1 – #78.8).
+> **Status: feature-complete.** All 28 tools across the Read, Tasks, Projects
+> and Wiki right groups are implemented, plus the PHPUnit suite and ru_RU/en_US
+> localization (stages #78.1 – #78.8 of the "MCP for PM" project).
 
 ## Architecture
 
@@ -45,8 +45,25 @@ lists tool names directly.
 
 ## Activation
 
-Enable the plugin in `wa-config/apps/mcp/plugins.php`:
+Enable the plugin in `wa-config/apps/mcp/plugins.php` (site config, outside this
+repo):
 
 ```php
 return array('pm' => true);
 ```
+
+Then issue an MCP token in the mcp app and grant it the `pm` tool rights it
+needs (the right name equals the tool name, e.g. `pm_list_tasks`,
+`pm_create_task`). The token's `act_as` contact is the user every tool acts as;
+project membership and per-role permissions are enforced against that contact.
+
+## Localization
+
+Localized via the `mcp_pm` gettext domain (`ru_RU`, `en_US`); every user-facing
+string goes through `_wp()`. See [AGENTS.md](AGENTS.md) for how to re-extract
+strings and how `.mo` files are built.
+
+## Contributing
+
+Tests, string extraction, packaging and release are documented in
+[AGENTS.md](AGENTS.md).

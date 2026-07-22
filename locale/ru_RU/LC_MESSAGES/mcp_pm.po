@@ -1,0 +1,433 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: mcp/plugins/pm\n"
+"POT-Creation-Date: 2026-07-22 13:29+0300\n"
+"PO-Revision-Date: \n"
+"Last-Translator: mcp/plugins/pm\n"
+"Language-Team: mcp/plugins/pm\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)>=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\n"
+"X-Poedit-Language: ru_RU\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-Basepath: utf-8\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: .\n"
+
+msgid "Project not found."
+msgstr "Проект не найден."
+
+msgid "You are not a member of this project."
+msgstr "Вы не участник этого проекта."
+
+msgid "You do not have access to the Project Management app."
+msgstr "У вас нет доступа к приложению «Управление проектами»."
+
+msgid "Only a project administrator can perform this action."
+msgstr "Это действие может выполнить только администратор проекта."
+
+msgid "Task not found."
+msgstr "Задача не найдена."
+
+msgid "You are not a member of this task's project."
+msgstr "Вы не участник проекта этой задачи."
+
+msgid "You must be a member of this project to perform this action."
+msgstr "Чтобы выполнить это действие, нужно быть участником проекта."
+
+msgid "This tool requires an authenticated user. The MCP token has no associated user (act_as = 0)."
+msgstr "Этот инструмент требует аутентифицированного пользователя. С MCP-токеном не связан пользователь (act_as = 0)."
+
+msgid "Database error. The action was not completed."
+msgstr "Ошибка базы данных. Действие не выполнено."
+
+msgid "Unexpected error. The action was not completed."
+msgstr "Непредвиденная ошибка. Действие не выполнено."
+
+msgid "Destructive action requires explicit \"confirm: true\" in the arguments."
+msgstr "Необратимое действие требует явного «confirm: true» в аргументах."
+
+msgid "You do not have permission to view this project's wiki."
+msgstr "У вас нет прав на просмотр вики этого проекта."
+
+msgid "You do not have permission to edit this project's wiki."
+msgstr "У вас нет прав на редактирование вики этого проекта."
+
+msgid "Unknown role \"%s\" in access_roles."
+msgstr "Неизвестная роль «%s» в access_roles."
+
+msgid "Project Management for MCP"
+msgstr "Управление проектами для MCP"
+
+msgid "MCP tools for the Project Management (pm) app: projects, tasks, assignees, sprints, milestones and wiki."
+msgstr "MCP-инструменты для приложения «Управление проектами» (pm): проекты, задачи, исполнители, спринты, вехи и вики."
+
+msgid "Project Management"
+msgstr "Управление проектами"
+
+msgid "Read"
+msgstr "Чтение"
+
+msgid "List projects"
+msgstr "Список проектов"
+
+msgid "List projects the user has access to, optionally filtered by status."
+msgstr "Список доступных пользователю проектов, с необязательным фильтром по статусу."
+
+msgid "Get project"
+msgstr "Карточка проекта"
+
+msgid "Read a project card: properties, participants with roles, workflows and milestones."
+msgstr "Чтение карточки проекта: свойства, участники с ролями, workflow и вехи."
+
+msgid "List statuses"
+msgstr "Список статусов"
+
+msgid "List global task statuses and, optionally, a specific workflow's statuses and transitions."
+msgstr "Список глобальных статусов задач и, при необходимости, статусов и переходов конкретного workflow."
+
+msgid "Get workflow"
+msgstr "Получить workflow"
+
+msgid "Read the workflows of a project: statuses, local names and transition matrix."
+msgstr "Чтение workflow проекта: статусы, локальные имена и матрица переходов."
+
+msgid "List project users"
+msgstr "Список участников проекта"
+
+msgid "List the participants of a project with their roles."
+msgstr "Список участников проекта с их ролями."
+
+msgid "List tags"
+msgstr "Список тегов"
+
+msgid "List the tags defined in a project."
+msgstr "Список тегов, заданных в проекте."
+
+msgid "List milestones"
+msgstr "Список вех"
+
+msgid "List the milestones of a project."
+msgstr "Список вех проекта."
+
+msgid "List tasks"
+msgstr "Список задач"
+
+msgid "List tasks the user can access, filtered by project, status, assignee, sprint, milestone, type, priority, tag or search."
+msgstr "Список доступных пользователю задач с фильтрами по проекту, статусу, исполнителю, спринту, вехе, типу, приоритету, тегу или поиску."
+
+msgid "Get task"
+msgstr "Карточка задачи"
+
+msgid "Read a full task card: tags, subtasks, participants, checklist, dependencies, custom fields, logged time and allowed transitions."
+msgstr "Чтение полной карточки задачи: теги, подзадачи, участники, чеклист, зависимости, кастомные поля, учтённое время и доступные переходы."
+
+msgid "List task comments"
+msgstr "Список комментариев задачи"
+
+msgid "List the comments of a task with author name and the internal flag."
+msgstr "Список комментариев задачи с именем автора и флагом внутреннего комментария."
+
+msgid "List sprints"
+msgstr "Список спринтов"
+
+msgid "List a project's sprints with their statuses and automation settings."
+msgstr "Список спринтов проекта с их статусами и настройками автоматизации."
+
+msgid "Get sprint"
+msgstr "Карточка спринта"
+
+msgid "Read a sprint card: project, auto-fill statuses and automation settings."
+msgstr "Чтение карточки спринта: проект, статусы автозаполнения и настройки автоматизации."
+
+msgid "Tasks"
+msgstr "Задачи"
+
+msgid "Create task"
+msgstr "Создать задачу"
+
+msgid "Create a task in a project (respects the task.create permission)."
+msgstr "Создание задачи в проекте (с учётом права task.create)."
+
+msgid "Update task"
+msgstr "Обновить задачу"
+
+msgid "Update task fields (respects per-field edit/assign/set_dates permissions)."
+msgstr "Обновление полей задачи (с учётом прав edit/assign/set_dates по полям)."
+
+msgid "Move task"
+msgstr "Переместить задачу"
+
+msgid "Change a task status through allowed workflow transitions."
+msgstr "Смена статуса задачи по разрешённым переходам workflow."
+
+msgid "Assign task"
+msgstr "Назначить исполнителя"
+
+msgid "Set or clear a task assignee (respects the task.assign permission)."
+msgstr "Назначение или снятие исполнителя задачи (с учётом права task.assign)."
+
+msgid "Add task comment"
+msgstr "Добавить комментарий"
+
+msgid "Add a comment to a task (public or internal)."
+msgstr "Добавление комментария к задаче (публичного или внутреннего)."
+
+msgid "Manage checklist"
+msgstr "Управление чеклистом"
+
+msgid "Add, rename, complete or delete task checklist items."
+msgstr "Добавление, переименование, отметка выполнения и удаление пунктов чеклиста задачи."
+
+msgid "Manage watchers"
+msgstr "Управление наблюдателями"
+
+msgid "Add or remove task watchers."
+msgstr "Добавление и удаление наблюдателей задачи."
+
+msgid "Delete task"
+msgstr "Удалить задачу"
+
+msgid "Permanently delete a task and its dependents (requires confirm)."
+msgstr "Безвозвратное удаление задачи и связанных с ней данных (требует подтверждения)."
+
+msgid "Projects"
+msgstr "Проекты"
+
+msgid "Create project"
+msgstr "Создать проект"
+
+msgid "Create a project (requires access to the Project Management app). The owner becomes a project admin."
+msgstr "Создание проекта (требует доступа к приложению «Управление проектами»). Владелец становится администратором проекта."
+
+msgid "Update project"
+msgstr "Обновить проект"
+
+msgid "Update project properties and attached workflows (requires project admin rights)."
+msgstr "Обновление свойств проекта и привязанных workflow (требует прав администратора проекта)."
+
+msgid "Add project user"
+msgstr "Добавить участника проекта"
+
+msgid "Add a participant with a role or change an existing member's role (requires project admin rights)."
+msgstr "Добавление участника с ролью или смена роли существующего участника (требует прав администратора проекта)."
+
+msgid "Remove project user"
+msgstr "Убрать участника проекта"
+
+msgid "Remove a participant from a project (requires project admin rights and confirm)."
+msgstr "Удаление участника из проекта (требует прав администратора проекта и подтверждения)."
+
+msgid "Wiki"
+msgstr "Вики"
+
+msgid "List wiki pages"
+msgstr "Список страниц вики"
+
+msgid "List a project's wiki page tree, filtered by visibility (requires the wiki.view or wiki.edit permission)."
+msgstr "Список дерева страниц вики проекта с учётом видимости (требует права wiki.view или wiki.edit)."
+
+msgid "Get wiki page"
+msgstr "Получить страницу вики"
+
+msgid "Read a wiki page with its content (requires the wiki.view permission and page visibility)."
+msgstr "Чтение страницы вики с содержимым (требует права wiki.view и видимости страницы)."
+
+msgid "Create wiki page"
+msgstr "Создать страницу вики"
+
+msgid "Create a wiki section or article (requires the wiki.edit permission)."
+msgstr "Создание раздела или статьи вики (требует права wiki.edit)."
+
+msgid "Update wiki page"
+msgstr "Обновить страницу вики"
+
+msgid "Update or move a wiki page (requires the wiki.edit permission)."
+msgstr "Обновление или перемещение страницы вики (требует права wiki.edit)."
+
+msgid "Add a participant to a project with a role, or update the role of an existing participant. Requires project administrator rights. Returns the updated participant list."
+msgstr "Добавляет участника в проект с ролью или меняет роль существующего участника. Требует прав администратора проекта. Возвращает обновлённый список участников."
+
+msgid "contact_id is required."
+msgstr "Требуется contact_id."
+
+msgid "Contact not found."
+msgstr "Контакт не найден."
+
+msgid "Unknown role \"%s\"."
+msgstr "Неизвестная роль «%s»."
+
+msgid "Add a comment to a task. Requires a non-readonly project role. Set is_internal=true for an internal (staff-only) note. Returns the created comment."
+msgstr "Добавляет комментарий к задаче. Требует не-readonly роли в проекте. Укажите is_internal=true для внутренней (служебной) заметки. Возвращает созданный комментарий."
+
+msgid "Comment text is required."
+msgstr "Требуется текст комментария."
+
+msgid "Your project role cannot add comments."
+msgstr "Ваша роль в проекте не позволяет добавлять комментарии."
+
+msgid "Assign a task to a contact, or unassign it with assignee_contact_id = 0. The assignee must be a project participant. Requires the task.assign permission. Returns the updated task card."
+msgstr "Назначает задачу контакту или снимает исполнителя при assignee_contact_id = 0. Исполнитель должен быть участником проекта. Требует права task.assign. Возвращает обновлённую карточку задачи."
+
+msgid "Create a project. Requires access to the Project Management app. The owner (defaults to the current user) is added as a project administrator. Returns the created project card."
+msgstr "Создаёт проект. Требует доступа к приложению «Управление проектами». Владелец (по умолчанию текущий пользователь) добавляется как администратор проекта. Возвращает карточку созданного проекта."
+
+msgid "Project name is required."
+msgstr "Требуется название проекта."
+
+msgid "Owner contact not found."
+msgstr "Контакт-владелец не найден."
+
+msgid "Unknown workflow \"%s\"."
+msgstr "Неизвестный workflow «%s»."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow. Returns the created task card."
+msgstr "Создаёт задачу в проекте. Требует членства в проекте с правом task.create. workflow_id обязателен, если в проекте больше одного workflow. Возвращает карточку созданной задачи."
+
+msgid "Task subject is required."
+msgstr "Требуется тема задачи."
+
+msgid "workflow_id is required (the project has multiple workflows)."
+msgstr "workflow_id обязателен (в проекте несколько workflow)."
+
+msgid "Create a wiki section or article in a project. Requires the wiki.edit permission. A \"section\" is a folder and holds no content. Returns the created page."
+msgstr "Создаёт раздел или статью вики в проекте. Требует права wiki.edit. «section» — это папка без содержимого. Возвращает созданную страницу."
+
+msgid "Page title is required."
+msgstr "Требуется заголовок страницы."
+
+msgid "Parent page not found in this project."
+msgstr "Родительская страница не найдена в этом проекте."
+
+msgid "Permanently delete a task and its subtasks, comments, tags and custom fields. Requires the task.delete permission and explicit confirm=true. This cannot be undone."
+msgstr "Безвозвратно удаляет задачу вместе с подзадачами, комментариями, тегами и кастомными полями. Требует права task.delete и явного confirm=true. Действие необратимо."
+
+msgid "Get a project card: properties, participants with roles, workflows and milestones. Requires project membership."
+msgstr "Возвращает карточку проекта: свойства, участники с ролями, workflow и вехи. Требует членства в проекте."
+
+msgid "Get a sprint card: project, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in the sprint's project."
+msgstr "Возвращает карточку спринта: проект, статусы автозаполнения и настройки автоматизации (auto-create-next, auto-close, move-unfinished, auto-fill). Требует членства в проекте спринта."
+
+msgid "Sprint not found."
+msgstr "Спринт не найден."
+
+msgid "You are not a member of this sprint's project."
+msgstr "Вы не участник проекта этого спринта."
+
+msgid "Get a full task card: description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
+msgstr "Возвращает полную карточку задачи: описание, теги, подзадачи, веха, участники, чеклист, зависимости, кастомные поля, учтённое время и доступные переходы статусов. Требует членства в проекте задачи."
+
+msgid "Read a wiki page with its content. Requires the wiki.view or wiki.edit permission and that the page is visible to the caller."
+msgstr "Читает страницу вики с содержимым. Требует права wiki.view или wiki.edit и видимости страницы для вызывающего."
+
+msgid "Wiki page not found."
+msgstr "Страница вики не найдена."
+
+msgid "You are not allowed to view this wiki page."
+msgstr "Вам не разрешён просмотр этой страницы вики."
+
+msgid "Get the workflows of a project: each workflow's statuses (with local names) and transition matrix. Requires project membership."
+msgstr "Возвращает workflow проекта: статусы каждого workflow (с локальными именами) и матрицу переходов. Требует членства в проекте."
+
+msgid "List the milestones of a project. Requires project membership."
+msgstr "Список вех проекта. Требует членства в проекте."
+
+msgid "List projects the current user has access to, optionally filtered by status (planned, active, completed)."
+msgstr "Список проектов, доступных текущему пользователю, с необязательным фильтром по статусу (planned, active, completed)."
+
+msgid "List the participants of a project with their roles. Requires project membership."
+msgstr "Список участников проекта с их ролями. Требует членства в проекте."
+
+msgid "List a project's sprints (active first, then planned, then completed) with automation settings. Requires project membership. Backlog tasks are listed via pm_list_tasks with sprint_id=-1."
+msgstr "Список спринтов проекта (сначала активные, затем запланированные, затем завершённые) с настройками автоматизации. Требует членства в проекте. Задачи бэклога выводятся через pm_list_tasks с sprint_id=-1."
+
+msgid "List global task statuses. Pass workflow_id to also get that workflow's statuses (with local names) and transition matrix."
+msgstr "Список глобальных статусов задач. Передайте workflow_id, чтобы также получить статусы этого workflow (с локальными именами) и матрицу переходов."
+
+msgid "Workflow not found."
+msgstr "Workflow не найден."
+
+msgid "List the tags defined in a project. Requires project membership."
+msgstr "Список тегов, заданных в проекте. Требует членства в проекте."
+
+msgid "List the comments of a task, oldest first, with author name and the internal flag. Requires membership of the task's project."
+msgstr "Список комментариев задачи (сначала старые) с именем автора и флагом внутреннего комментария. Требует членства в проекте задачи."
+
+msgid "List tasks the current user can access, filtered by project, status, assignee, sprint (-1 = backlog), milestone, type, priority, tag or a subject search. Paginated."
+msgstr "Список задач, доступных текущему пользователю, с фильтрами по проекту, статусу, исполнителю, спринту (-1 = бэклог), вехе, типу, приоритету, тегу или поиску по теме. С пагинацией."
+
+msgid "List the wiki page tree of a project (metadata only, no content), filtered by the caller's visibility. Requires the wiki.view or wiki.edit permission."
+msgstr "Список дерева страниц вики проекта (только метаданные, без содержимого) с учётом видимости для вызывающего. Требует права wiki.view или wiki.edit."
+
+msgid "Manage a task checklist: add, rename, complete, uncomplete or delete an item. Requires the task.edit permission. Returns the updated checklist."
+msgstr "Управляет чеклистом задачи: добавление, переименование, отметка выполнения/снятия и удаление пункта. Требует права task.edit. Возвращает обновлённый чеклист."
+
+msgid "You do not have permission to edit this task's checklist."
+msgstr "У вас нет прав на редактирование чеклиста этой задачи."
+
+msgid "item_id is required for this action."
+msgstr "Для этого действия требуется item_id."
+
+msgid "Checklist item not found on this task."
+msgstr "Пункт чеклиста не найден в этой задаче."
+
+msgid "text is required to add a checklist item."
+msgstr "Для добавления пункта чеклиста требуется text."
+
+msgid "text is required to update a checklist item."
+msgstr "Для обновления пункта чеклиста требуется text."
+
+msgid "Add or remove a task watcher. Managing other contacts requires the task.manage_watchers permission; a user may always remove themselves. Returns the task participants."
+msgstr "Добавляет или убирает наблюдателя задачи. Управление другими контактами требует права task.manage_watchers; себя пользователь может убрать всегда. Возвращает участников задачи."
+
+msgid "You do not have permission to manage watchers."
+msgstr "У вас нет прав на управление наблюдателями."
+
+msgid "That contact is an assignee, not a watcher. Use pm_assign_task."
+msgstr "Этот контакт — исполнитель, а не наблюдатель. Используйте pm_assign_task."
+
+msgid "That contact is not a watcher on this task."
+msgstr "Этот контакт не является наблюдателем этой задачи."
+
+msgid "Move a task to another status, respecting the workflow transitions available to the caller. Requires the task.change_status permission. Returns the updated task card."
+msgstr "Перемещает задачу в другой статус с учётом переходов workflow, доступных вызывающему. Требует права task.change_status. Возвращает обновлённую карточку задачи."
+
+msgid "Remove a participant from a project. Requires project administrator rights and confirm=true. The project owner cannot be removed. Returns the remaining participants."
+msgstr "Удаляет участника из проекта. Требует прав администратора проекта и confirm=true. Владельца проекта удалить нельзя. Возвращает оставшихся участников."
+
+msgid "The project owner cannot be removed. Reassign ownership with pm_update_project first."
+msgstr "Владельца проекта удалить нельзя. Сначала смените владельца через pm_update_project."
+
+msgid "This contact is not a member of the project."
+msgstr "Этот контакт не является участником проекта."
+
+msgid "Update a project's properties (name, description, status, workflows, ...). Only the supplied fields change. Requires project administrator rights. Returns the updated project card."
+msgstr "Обновляет свойства проекта (название, описание, статус, workflow и т. д.). Меняются только переданные поля. Требует прав администратора проекта. Возвращает обновлённую карточку проекта."
+
+msgid "Project name cannot be empty."
+msgstr "Название проекта не может быть пустым."
+
+msgid "workflow_ids must be a non-empty list."
+msgstr "workflow_ids должен быть непустым списком."
+
+msgid "Nothing to update: supply at least one field."
+msgstr "Нечего обновлять: укажите хотя бы одно поле."
+
+msgid "Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields). Pass 0 for assignee/milestone/sprint/parent to clear them. Use pm_move_task to change status. Returns the updated task card."
+msgstr "Обновляет поля задачи (тема, описание, приоритет, тип, исполнитель, даты, веха, спринт, родитель, оценка, прогресс, кастомные поля). Передайте 0 для assignee/milestone/sprint/parent, чтобы очистить. Для смены статуса используйте pm_move_task. Возвращает обновлённую карточку задачи."
+
+msgid "No fields to update."
+msgstr "Нет полей для обновления."
+
+msgid "Update a wiki page: title, content, type, publication, access roles, or move it under another parent (parent_id=0 makes it top-level). Requires the wiki.edit permission. Returns the updated page."
+msgstr "Обновляет страницу вики: заголовок, содержимое, тип, публикацию, роли доступа или перемещение под другого родителя (parent_id=0 делает страницу верхнеуровневой). Требует права wiki.edit. Возвращает обновлённую страницу."
+
+msgid "Page title cannot be empty."
+msgstr "Заголовок страницы не может быть пустым."
+
+msgid "A page cannot be moved into itself."
+msgstr "Страницу нельзя переместить саму в себя."
+
+msgid "Invalid parent page (not in this project, or it is a descendant of this page)."
+msgstr "Недопустимая родительская страница (не в этом проекте или является потомком этой страницы)."
