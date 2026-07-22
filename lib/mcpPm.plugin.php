@@ -71,6 +71,12 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpUpdateProjectTool());
         $registry->addTool(new pmMcpAddProjectUserTool());
         $registry->addTool(new pmMcpRemoveProjectUserTool());
+
+        // ===== Stage 5 — Wiki (4 tools) =====
+        $registry->addTool(new pmMcpListWikiPagesTool());
+        $registry->addTool(new pmMcpGetWikiPageTool());
+        $registry->addTool(new pmMcpCreateWikiPageTool());
+        $registry->addTool(new pmMcpUpdateWikiPageTool());
     }
 
     /**
@@ -245,6 +251,36 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Projects'),
                     'title'       => _wp('Remove project user'),
                     'description' => _wp('Remove a participant from a project (requires project admin rights and confirm).'),
+                ),
+
+                // ===== Wiki group (4 rights) =====
+                array(
+                    'name'        => 'pm_list_wiki_pages',
+                    'group'       => 'pm.wiki',
+                    'group_title' => _wp('Wiki'),
+                    'title'       => _wp('List wiki pages'),
+                    'description' => _wp('List a project\'s wiki page tree, filtered by visibility (requires the wiki.view or wiki.edit permission).'),
+                ),
+                array(
+                    'name'        => 'pm_get_wiki_page',
+                    'group'       => 'pm.wiki',
+                    'group_title' => _wp('Wiki'),
+                    'title'       => _wp('Get wiki page'),
+                    'description' => _wp('Read a wiki page with its content (requires the wiki.view permission and page visibility).'),
+                ),
+                array(
+                    'name'        => 'pm_create_wiki_page',
+                    'group'       => 'pm.wiki',
+                    'group_title' => _wp('Wiki'),
+                    'title'       => _wp('Create wiki page'),
+                    'description' => _wp('Create a wiki section or article (requires the wiki.edit permission).'),
+                ),
+                array(
+                    'name'        => 'pm_update_wiki_page',
+                    'group'       => 'pm.wiki',
+                    'group_title' => _wp('Wiki'),
+                    'title'       => _wp('Update wiki page'),
+                    'description' => _wp('Update or move a wiki page (requires the wiki.edit permission).'),
                 ),
             ),
         );

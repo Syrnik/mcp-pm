@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Stage 5 — wiki tools (Task #78.6): `pm_list_wiki_pages`, `pm_get_wiki_page`,
+  `pm_create_wiki_page`, `pm_update_wiki_page`. The wiki has no domain class, so
+  these mirror `pmWikiActions` and write via `pmWikiPageModel` directly. Access
+  is two-level: the `wiki.view`/`wiki.edit` permission gates the project, and
+  `pmMcpWikiHelper::canUserSeePage` (a faithful port of the controller's
+  visibility rule) filters each page — unpublished pages show only to their
+  author and to admins/managers; published pages restricted by `access_roles`
+  only to those roles. Sections never store content; `pm_update_wiki_page`
+  supports re-parenting with a self/descendant cycle guard (`isSafeParent`) and
+  `parent_id=0` to move a page to the top level. `access_roles` accepts a slug
+  list and is validated against `pmRoleModel`. The tree listing returns
+  `children` as a map keyed by parent id (`"0"` = top level). New helper class
+  `pmMcpWikiHelper` and an `argBool()` helper on the tool base. Rights
+  registered under a new `pm.wiki` group.
 - Stage 4 — write tools for projects (Task #78.5): `pm_create_project`,
   `pm_update_project`, `pm_add_project_user`, `pm_remove_project_user`. Projects
   have no `pmTask`-style domain class, so these mirror `pmProjectsSaveController`
