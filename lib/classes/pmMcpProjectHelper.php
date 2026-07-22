@@ -137,4 +137,63 @@ class pmMcpProjectHelper
         }
         return $out;
     }
+
+    /**
+     * The full project card returned by the write tools after a mutation:
+     * properties, participants, workflows and milestones (same shape as
+     * pm_get_project). Reloads the row so it reflects the persisted state.
+     *
+     * @param int $project_id
+     * @return array
+     */
+    public static function fullCard($project_id)
+    {
+        $project = (new pmProjectModel())->getById((int) $project_id);
+        return array(
+            'project'      => self::formatProject($project, true),
+            'participants' => self::formatParticipants($project_id),
+            'workflows'    => pmMcpWorkflowHelper::describeProjectWorkflows($project),
+            'milestones'   => self::formatMilestones($project_id),
+        );
+    }
+
+    /**
+     * Require the current user to have access to the Project Management app.
+     * pm has no granular app-level rights config — any backend user with pm
+     * access has it fully — so this mirrors pmHelper::hasPermission()'s admin
+     * bypass and otherwise checks the plain 'backend' access right. Needed for
+     * pm_create_project, where there is no project membership to check yet.
+     *
+     * @throws waRightsException when the user cannot use the pm app.
+     */
+    public static function requireAppAccess()
+    {
+        $user = wa()->getUser();
+        if ($user->isAdmin() || $user->getRights('pm', 'backend')) {
+            return;
+        }
+        throw new waRightsException(_wp('You do not have access to the Project Management app.'));
+    }
+
+    /**
+     * Require the current user to be an administrator of the project (project
+     * role "admin") or an app admin. Managing a project's settings and
+     * membership is an admin-level action. Assumes existence/membership were
+     * already checked with loadAccessibleProject().
+     *
+     * @param int $project_id
+     * @throws waRightsException when the user is not a project admin.
+     * @return string  The role slug ("admin").
+     */
+    public static function requireProjectAdmin($project_id)
+    {
+        if (wa()->getUser()->isAdmin()) {
+            return 'admin';
+        }
+        $role = pmHelper::getContactRole(wa()->getUser()->getId(), (int) $project_id);
+        if ($role !== 'admin') {
+            throw new waRightsException(_wp('Only a project administrator can perform this action.'));
+        }
+        return $role;
+    }
 }

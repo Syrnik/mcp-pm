@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Stage 4 — write tools for projects (Task #78.5): `pm_create_project`,
+  `pm_update_project`, `pm_add_project_user`, `pm_remove_project_user`. Projects
+  have no `pmTask`-style domain class, so these mirror `pmProjectsSaveController`
+  and write via `pmProjectModel` / `pmProjectUserModel` directly. Access:
+  `pm_create_project` requires pm app access (the owner, defaulting to the
+  caller, is added as project admin); the other three require the caller to be a
+  project administrator. `pm_add_project_user` is upsert-style (adds, or changes
+  an existing member's role); `pm_remove_project_user` requires `confirm: true`
+  and refuses to remove the project owner. Workflow attachments are validated
+  against the configured workflow slugs and roles against `pmRoleModel`. New
+  helpers on `pmMcpProjectHelper` (`fullCard`, `requireAppAccess`,
+  `requireProjectAdmin`). Rights registered under a new `pm.projects` group.
 - Stage 3 — write tools for tasks (Task #78.4): `pm_create_task`,
   `pm_update_task`, `pm_move_task`, `pm_assign_task`, `pm_add_task_comment`,
   `pm_manage_checklist`, `pm_manage_watchers`, `pm_delete_task`. All mutations go

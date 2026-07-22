@@ -65,6 +65,12 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpManageChecklistTool());
         $registry->addTool(new pmMcpManageWatchersTool());
         $registry->addTool(new pmMcpDeleteTaskTool());
+
+        // ===== Stage 4 — Write: projects (4 tools) =====
+        $registry->addTool(new pmMcpCreateProjectTool());
+        $registry->addTool(new pmMcpUpdateProjectTool());
+        $registry->addTool(new pmMcpAddProjectUserTool());
+        $registry->addTool(new pmMcpRemoveProjectUserTool());
     }
 
     /**
@@ -209,6 +215,36 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Tasks'),
                     'title'       => _wp('Delete task'),
                     'description' => _wp('Permanently delete a task and its dependents (requires confirm).'),
+                ),
+
+                // ===== Projects group — write (4 rights) =====
+                array(
+                    'name'        => 'pm_create_project',
+                    'group'       => 'pm.projects',
+                    'group_title' => _wp('Projects'),
+                    'title'       => _wp('Create project'),
+                    'description' => _wp('Create a project (requires access to the Project Management app). The owner becomes a project admin.'),
+                ),
+                array(
+                    'name'        => 'pm_update_project',
+                    'group'       => 'pm.projects',
+                    'group_title' => _wp('Projects'),
+                    'title'       => _wp('Update project'),
+                    'description' => _wp('Update project properties and attached workflows (requires project admin rights).'),
+                ),
+                array(
+                    'name'        => 'pm_add_project_user',
+                    'group'       => 'pm.projects',
+                    'group_title' => _wp('Projects'),
+                    'title'       => _wp('Add project user'),
+                    'description' => _wp('Add a participant with a role or change an existing member\'s role (requires project admin rights).'),
+                ),
+                array(
+                    'name'        => 'pm_remove_project_user',
+                    'group'       => 'pm.projects',
+                    'group_title' => _wp('Projects'),
+                    'title'       => _wp('Remove project user'),
+                    'description' => _wp('Remove a participant from a project (requires project admin rights and confirm).'),
                 ),
             ),
         );
