@@ -18,7 +18,7 @@ class pmMcpAddTaskCommentTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id', 'text'),
             'properties' => array(
-                'task_id'     => array('type' => 'integer', 'minimum' => 1, 'description' => 'Task id.'),
+                'task_id'     => self::taskRefSchema('The task to comment on.'),
                 'text'        => array('type' => 'string', 'minLength' => 1, 'description' => 'Comment text.'),
                 'is_internal' => array('type' => 'boolean', 'description' => 'Mark the comment as internal. Defaults to false.'),
             ),
@@ -28,13 +28,13 @@ class pmMcpAddTaskCommentTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
-            $task_id = $this->argInt($arguments, 'task_id');
-            $text    = $this->argString($arguments, 'text');
+            $text = $this->argString($arguments, 'text');
             if ($text === '') {
                 return $this->softFail('invalid_param', _wp('Comment text is required.'));
             }
 
-            $entity = pmMcpTaskHelper::loadTaskEntity($task_id, $row);
+            $entity = pmMcpTaskHelper::loadTaskEntity($this->argRef($arguments, 'task_id'), $row);
+            $task_id = (int) $row['id'];
 
             // A project role is required to comment. View-only roles cannot.
             // NOTE: the role config's `readonly` flag marks a *system* role

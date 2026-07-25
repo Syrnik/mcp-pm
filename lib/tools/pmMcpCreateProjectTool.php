@@ -95,6 +95,7 @@ class pmMcpCreateProjectTool extends pmMcpToolBase
 
             $model = new pmProjectModel();
             $project_id = $model->insert($data);
+            pmMcpTaskHelper::resetNumberConfig();
             $model->saveWorkflows($project_id, $workflow_ids);
             (new pmProjectUserModel())->add($project_id, $owner_contact_id, 'admin');
 

@@ -17,7 +17,7 @@ class pmMcpDeleteTaskTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id', 'confirm'),
             'properties' => array(
-                'task_id' => array('type' => 'integer', 'minimum' => 1, 'description' => 'Task id.'),
+                'task_id' => self::taskRefSchema('The task to delete.'),
                 'confirm' => array('type' => 'boolean', 'description' => 'Must be true to proceed with the irreversible delete.'),
             ),
         );
@@ -30,14 +30,16 @@ class pmMcpDeleteTaskTool extends pmMcpToolBase
                 return $error;
             }
 
-            $task_id = $this->argInt($arguments, 'task_id');
-            $entity = pmMcpTaskHelper::loadTaskEntity($task_id);
+            $entity = pmMcpTaskHelper::loadTaskEntity($this->argRef($arguments, 'task_id'), $row);
+            $task_id = (int) $row['id'];
+            $full_number = pmMcpTaskHelper::formatNumber($task_id, (int) $row['project_id']);
 
             $entity->deleteWithCleanup($this->getUserId());
 
             return $this->ok(array(
-                'task_id' => $task_id,
-                'deleted' => true,
+                'task_id'     => $task_id,
+                'full_number' => $full_number,
+                'deleted'     => true,
             ));
         });
     }

@@ -21,7 +21,60 @@ abstract class pmMcpToolBase extends mcpTool
         if (self::$validator === null) {
             self::$validator = new mcpSchemaValidator();
         }
-        return self::$validator->validate($this->getInputSchema(), $arguments);
+
+        $schema = $this->getInputSchema();
+
+        // Task-reference arguments are declared as strings so that both "32"
+        // and "AUTH-32" validate (see taskRefSchema()). A client that sends the
+        // id as a JSON number is still right, so coerce numbers to strings for
+        // every string-typed property rather than failing on the type alone.
+        $properties = isset($schema['properties']) && is_array($schema['properties']) ? $schema['properties'] : array();
+        foreach ($properties as $name => $property) {
+            if (!is_array($property) || ($property['type'] ?? null) !== 'string') {
+                continue;
+            }
+            if (array_key_exists($name, $arguments) && (is_int($arguments[$name]) || is_float($arguments[$name]))) {
+                $arguments[$name] = (string) $arguments[$name];
+            }
+        }
+
+        return self::$validator->validate($schema, $arguments);
+    }
+
+    /**
+     * Schema fragment for an argument naming a task.
+     *
+     * pm shows a task as its project's number ("AUTH-32"), so that is what a
+     * user quotes and what an LLM passes on. Declaring the argument as a string
+     * lets both the bare id and the full number through one schema; validate()
+     * keeps integer clients working and pmMcpTaskHelper::parseTaskRef() sorts
+     * the shapes out.
+     *
+     * @param string $description  Role of this particular argument.
+     * @return array
+     */
+    protected static function taskRefSchema($description)
+    {
+        return array(
+            'type'        => 'string',
+            'minLength'   => 1,
+            'description' => $description
+                . ' Accepts the numeric id ("32") or the full task number with the project prefix ("AUTH-32", "AUTH32", "32-AUTH");'
+                . ' case, spaces and punctuation are ignored.',
+        );
+    }
+
+    /**
+     * Read an entity reference argument (a task id or full number) as the raw
+     * scalar the client sent, trimmed. Unlike argInt(), it does not flatten
+     * "AUTH-32" to 0.
+     */
+    protected function argRef(array $args, $key)
+    {
+        if (!isset($args[$key]) || !is_scalar($args[$key])) {
+            return '';
+        }
+        return trim((string) $args[$key]);
     }
 
     /**

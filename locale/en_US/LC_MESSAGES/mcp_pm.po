@@ -27,8 +27,6 @@ msgstr ""
 msgid "Only a project administrator can perform this action."
 msgstr ""
 
-msgid "Task not found."
-msgstr ""
 
 msgid "You are not a member of this task's project."
 msgstr ""
@@ -315,8 +313,6 @@ msgstr ""
 msgid "You are not a member of this sprint's project."
 msgstr ""
 
-msgid "Get a full task card: description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
-msgstr ""
 
 msgid "Read a wiki page with its content. Requires the wiki.view or wiki.edit permission and that the page is visible to the caller."
 msgstr ""
@@ -430,4 +426,16 @@ msgid "A page cannot be moved into itself."
 msgstr ""
 
 msgid "Invalid parent page (not in this project, or it is a descendant of this page)."
+msgstr ""
+
+msgid "\"%s\" is not a task reference. Pass a task id (32) or a full task number (AUTH-32)."
+msgstr ""
+
+msgid "Task \"%s\" not found: task %d is %s."
+msgstr ""
+
+msgid "Task \"%s\" not found."
+msgstr ""
+
+msgid "Get a full task card by id or full task number (AUTH-32): description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
 msgstr ""

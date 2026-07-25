@@ -21,7 +21,7 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id'),
             'properties' => array(
-                'task_id'             => array('type' => 'integer', 'minimum' => 1, 'description' => 'Task id.'),
+                'task_id'             => self::taskRefSchema('The task to update.'),
                 'subject'             => array('type' => 'string', 'minLength' => 1, 'description' => 'New subject.'),
                 'description'         => array('type' => 'string', 'description' => 'New description.'),
                 'priority'            => array('type' => 'string', 'description' => 'New priority slug.'),
@@ -29,7 +29,7 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
                 'assignee_contact_id' => array('type' => 'integer', 'minimum' => 0, 'description' => 'New assignee (0 to unassign).'),
                 'milestone_id'        => array('type' => 'integer', 'minimum' => 0, 'description' => 'New milestone (0 to clear).'),
                 'sprint_id'           => array('type' => 'integer', 'minimum' => 0, 'description' => 'New sprint (0 for backlog).'),
-                'parent_id'           => array('type' => 'integer', 'minimum' => 0, 'description' => 'New parent task (0 to detach).'),
+                'parent_id'           => self::taskRefSchema('New parent task, or 0 to detach.'),
                 'start_date'          => array('type' => 'string', 'description' => 'Start date (YYYY-MM-DD, empty to clear).'),
                 'due_date'            => array('type' => 'string', 'description' => 'Due date (YYYY-MM-DD, empty to clear).'),
                 'deadline'            => array('type' => 'string', 'description' => 'Deadline (YYYY-MM-DD, empty to clear).'),
@@ -43,8 +43,8 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
-            $task_id = $this->argInt($arguments, 'task_id');
-            $entity = pmMcpTaskHelper::loadTaskEntity($task_id);
+            $entity = pmMcpTaskHelper::loadTaskEntity($this->argRef($arguments, 'task_id'), $row);
+            $task_id = (int) $row['id'];
 
             $data = array();
 
@@ -54,11 +54,20 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
                 }
             }
             // Nullable foreign keys: 0 clears (save() writes NULL for null values).
-            foreach (array('assignee_contact_id', 'milestone_id', 'sprint_id', 'parent_id') as $f) {
+            foreach (array('assignee_contact_id', 'milestone_id', 'sprint_id') as $f) {
                 if (array_key_exists($f, $arguments) && $arguments[$f] !== '') {
                     $v = (int) $arguments[$f];
                     $data[$f] = $v > 0 ? $v : null;
                 }
+            }
+            // The parent may be quoted as a full number, so it cannot go
+            // through the plain (int) cast above — that would read "AUTH-31"
+            // as 0 and silently detach the task instead of re-parenting it.
+            if (array_key_exists('parent_id', $arguments) && $arguments['parent_id'] !== '') {
+                $parent_ref = $this->argRef($arguments, 'parent_id');
+                $data['parent_id'] = ($parent_ref === '' || $parent_ref === '0')
+                    ? null
+                    : (int) pmMcpTaskHelper::loadAccessibleTask($parent_ref)['id'];
             }
             if (array_key_exists('progress', $arguments) && $arguments['progress'] !== '') {
                 $data['progress'] = (int) $arguments['progress'];

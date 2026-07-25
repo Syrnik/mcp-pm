@@ -27,8 +27,6 @@ msgstr "У вас нет доступа к приложению «Управле
 msgid "Only a project administrator can perform this action."
 msgstr "Это действие может выполнить только администратор проекта."
 
-msgid "Task not found."
-msgstr "Задача не найдена."
 
 msgid "You are not a member of this task's project."
 msgstr "Вы не участник проекта этой задачи."
@@ -315,8 +313,6 @@ msgstr "Спринт не найден."
 msgid "You are not a member of this sprint's project."
 msgstr "Вы не участник проекта этого спринта."
 
-msgid "Get a full task card: description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
-msgstr "Возвращает полную карточку задачи: описание, теги, подзадачи, веха, участники, чеклист, зависимости, кастомные поля, учтённое время и доступные переходы статусов. Требует членства в проекте задачи."
 
 msgid "Read a wiki page with its content. Requires the wiki.view or wiki.edit permission and that the page is visible to the caller."
 msgstr "Читает страницу вики с содержимым. Требует права wiki.view или wiki.edit и видимости страницы для вызывающего."
@@ -431,3 +427,15 @@ msgstr "Страницу нельзя переместить саму в себ�
 
 msgid "Invalid parent page (not in this project, or it is a descendant of this page)."
 msgstr "Недопустимая родительская страница (не в этом проекте или является потомком этой страницы)."
+
+msgid "\"%s\" is not a task reference. Pass a task id (32) or a full task number (AUTH-32)."
+msgstr "«%s» не похоже на ссылку на задачу. Укажите id задачи (32) или её полный номер (AUTH-32)."
+
+msgid "Task \"%s\" not found: task %d is %s."
+msgstr "Задача «%s» не найдена: задача %d — это %s."
+
+msgid "Task \"%s\" not found."
+msgstr "Задача «%s» не найдена."
+
+msgid "Get a full task card by id or full task number (AUTH-32): description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
+msgstr "Возвращает полную карточку задачи по id или полному номеру (AUTH-32): описание, теги, подзадачи, веха, участники, чеклист, зависимости, кастомные поля, учтённое время и доступные переходы статусов. Требует членства в проекте задачи."

@@ -17,7 +17,7 @@ class pmMcpAssignTaskTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id', 'assignee_contact_id'),
             'properties' => array(
-                'task_id'             => array('type' => 'integer', 'minimum' => 1, 'description' => 'Task id.'),
+                'task_id'             => self::taskRefSchema('The task to assign.'),
                 'assignee_contact_id' => array('type' => 'integer', 'minimum' => 0, 'description' => 'Contact id to assign, or 0 to unassign.'),
             ),
         );
@@ -26,9 +26,9 @@ class pmMcpAssignTaskTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
-            $task_id  = $this->argInt($arguments, 'task_id');
             $assignee = $this->argInt($arguments, 'assignee_contact_id');
-            $entity = pmMcpTaskHelper::loadTaskEntity($task_id);
+            $entity = pmMcpTaskHelper::loadTaskEntity($this->argRef($arguments, 'task_id'), $row);
+            $task_id = (int) $row['id'];
 
             $entity->save(array('assignee_contact_id' => $assignee > 0 ? $assignee : null), $this->getUserId());
 

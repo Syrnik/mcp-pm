@@ -105,6 +105,32 @@ class pmMcpSchemaTest extends TestCase
         $this->assertNotEmpty($errors, 'invalid status enum must be reported');
     }
 
+    public function testValidateCoercesNumericTaskReference(): void
+    {
+        // task_id is declared as a string so "AUTH-32" validates; an integer id
+        // from an older client must still be accepted.
+        $this->assertSame(array(), (new pmMcpGetTaskTool())->validate(array('task_id' => 32)));
+        $this->assertSame(array(), (new pmMcpGetTaskTool())->validate(array('task_id' => 'AUTH-32')));
+    }
+
+    // ---- task references ----
+
+    public function testParseTaskRefReadsBareIds(): void
+    {
+        // Shapes that resolve without consulting any project prefix.
+        $this->assertSame(32, pmMcpTaskHelper::parseTaskRef(32)['id']);
+        $this->assertSame(32, pmMcpTaskHelper::parseTaskRef('32')['id']);
+        $this->assertSame(32, pmMcpTaskHelper::parseTaskRef(' 32 ')['id']);
+        $this->assertSame(32, pmMcpTaskHelper::parseTaskRef('#32')['id']);
+        $this->assertSame('', pmMcpTaskHelper::parseTaskRef('#32')['prefix'], 'a bare id carries no prefix');
+    }
+
+    public function testParseTaskRefRejectsGarbage(): void
+    {
+        $this->expectException(waAPIException::class);
+        pmMcpTaskHelper::parseTaskRef('---');
+    }
+
     // ---- wiki: parseAccessRoles ----
 
     public function testParseAccessRoles(): void

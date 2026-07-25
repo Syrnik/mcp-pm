@@ -19,7 +19,7 @@ class pmMcpManageWatchersTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id', 'action', 'contact_id'),
             'properties' => array(
-                'task_id'    => array('type' => 'integer', 'minimum' => 1, 'description' => 'Task id.'),
+                'task_id'    => self::taskRefSchema('The task whose watchers to manage.'),
                 'action'     => array('type' => 'string', 'enum' => array('add', 'remove'), 'description' => 'Add or remove a watcher.'),
                 'contact_id' => array('type' => 'integer', 'minimum' => 1, 'description' => 'Watcher contact id.'),
             ),
@@ -29,14 +29,14 @@ class pmMcpManageWatchersTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
-            $task_id    = $this->argInt($arguments, 'task_id');
             $action     = $this->argString($arguments, 'action');
             $contact_id = $this->argInt($arguments, 'contact_id');
             if ($contact_id <= 0) {
                 return $this->softFail('invalid_param', _wp('contact_id is required.'));
             }
 
-            $entity = pmMcpTaskHelper::loadTaskEntity($task_id, $row);
+            $entity = pmMcpTaskHelper::loadTaskEntity($this->argRef($arguments, 'task_id'), $row);
+            $task_id = (int) $row['id'];
             $me = $this->getUserId();
 
             $participant_model = new pmTaskParticipantModel();

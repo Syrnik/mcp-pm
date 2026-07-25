@@ -16,11 +16,7 @@ class pmMcpListTaskCommentsTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id'),
             'properties' => array(
-                'task_id' => array(
-                    'type'        => 'integer',
-                    'minimum'     => 1,
-                    'description' => 'Task id.',
-                ),
+                'task_id' => self::taskRefSchema('The task whose comments to list.'),
             ),
         );
     }
@@ -28,7 +24,7 @@ class pmMcpListTaskCommentsTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
-            $task = pmMcpTaskHelper::loadAccessibleTask($this->argInt($arguments, 'task_id'));
+            $task = pmMcpTaskHelper::loadAccessibleTask($this->argRef($arguments, 'task_id'));
 
             $comments = array();
             foreach ((new pmCommentModel())->getByTask((int) $task['id']) as $c) {
@@ -45,9 +41,10 @@ class pmMcpListTaskCommentsTool extends pmMcpToolBase
             }
 
             return $this->ok(array(
-                'task_id'  => (int) $task['id'],
-                'comments' => $comments,
-                'count'    => count($comments),
+                'task_id'     => (int) $task['id'],
+                'full_number' => pmMcpTaskHelper::formatNumber((int) $task['id'], (int) $task['project_id']),
+                'comments'    => $comments,
+                'count'       => count($comments),
             ));
         });
     }

@@ -17,7 +17,7 @@ class pmMcpMoveTaskTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id', 'status_id'),
             'properties' => array(
-                'task_id'   => array('type' => 'integer', 'minimum' => 1, 'description' => 'Task id.'),
+                'task_id'   => self::taskRefSchema('The task to move.'),
                 'status_id' => array('type' => 'integer', 'minimum' => 1, 'description' => 'Target status id. Must be a permitted transition (see pm_get_task.allowed_statuses).'),
             ),
         );
@@ -26,9 +26,9 @@ class pmMcpMoveTaskTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
-            $task_id   = $this->argInt($arguments, 'task_id');
             $status_id = $this->argInt($arguments, 'status_id');
-            $entity = pmMcpTaskHelper::loadTaskEntity($task_id);
+            $entity = pmMcpTaskHelper::loadTaskEntity($this->argRef($arguments, 'task_id'), $row);
+            $task_id = (int) $row['id'];
 
             $entity->moveToStatus($status_id, $this->getUserId());
 

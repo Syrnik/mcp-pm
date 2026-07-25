@@ -17,7 +17,7 @@ class pmMcpManageChecklistTool extends pmMcpToolBase
             'type'       => 'object',
             'required'   => array('task_id', 'action'),
             'properties' => array(
-                'task_id' => array('type' => 'integer', 'minimum' => 1, 'description' => 'Task id.'),
+                'task_id' => self::taskRefSchema('The task whose checklist to manage.'),
                 'action'  => array(
                     'type'        => 'string',
                     'enum'        => array('add', 'update', 'complete', 'uncomplete', 'delete'),
@@ -32,9 +32,9 @@ class pmMcpManageChecklistTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
-            $task_id = $this->argInt($arguments, 'task_id');
-            $action  = $this->argString($arguments, 'action');
-            $entity = pmMcpTaskHelper::loadTaskEntity($task_id, $row);
+            $action = $this->argString($arguments, 'action');
+            $entity = pmMcpTaskHelper::loadTaskEntity($this->argRef($arguments, 'task_id'), $row);
+            $task_id = (int) $row['id'];
 
             if (!$entity->canEdit($this->getUserId())) {
                 return $this->softFail('access_denied', _wp('You do not have permission to edit this task\'s checklist.'));

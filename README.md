@@ -38,6 +38,26 @@ project wiki through the MCP JSON-RPC protocol.
 The tool name equals its right name (helpdesk convention): a token scope
 lists tool names directly.
 
+## Task references
+
+pm shows a task as its project's number — `AUTH-32` for a project with prefix
+`AUTH`, `32-AUTH` in postfix mode, `#32` for a project without a prefix — and
+that is the form people quote. Every argument naming a task (`task_id`,
+`parent_id`) therefore accepts either shape:
+
+```
+32            AUTH-32            auth 32            AUTH32            32-AUTH
+```
+
+Case, spaces and punctuation are ignored. A reference whose prefix belongs to
+another project is rejected with `not_found` rather than silently returning
+that project's task of the same id — the error names the task's real number.
+`pm_list_tasks` treats a `search` term that reads as a reference the same way,
+so `search: "AUTH-32"` returns that task as well as any subject matches.
+
+Every serialised task carries its number back as `full_number`, in listings,
+task cards and subtasks alike.
+
 ## Dependencies
 
 - Webasyst MCP app (`app.mcp` >= 1.0.1)
