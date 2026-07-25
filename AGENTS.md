@@ -85,6 +85,9 @@ php /path/to/phpunit
   and tears everything down in `tearDown`.
 - `tests/pmMcp{Project,Task,Wiki,Sprint}ToolsTest.php` — integration tests that
   drive the tools against the live DB.
+- `tests/pmMcpDependencyToolTest.php` — integration tests for
+  `pm_manage_dependencies`: one stored row per relation, both cards reading it,
+  idempotent repeats, refused conflicts, removal from either end.
 - Keep `.phpunit.result.cache` out of git (see `.gitignore`).
 
 ### Fixture seeder

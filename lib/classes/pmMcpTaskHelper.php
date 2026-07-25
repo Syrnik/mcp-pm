@@ -433,8 +433,9 @@ class pmMcpTaskHelper
         unset($ci);
         $card['checklist'] = $checklist;
 
-        // Dependencies (depends_on / blocks / related).
-        $card['dependencies'] = (new pmTaskDependencyModel())->getByTask($id);
+        // Relations (depends_on / blocks / related). One stored row per relation,
+        // read from both ends — see pmMcpDependencyHelper.
+        $card['dependencies'] = pmMcpDependencyHelper::forTask($id);
 
         // Custom fields: field_id => value map.
         $card['custom_fields'] = (array) (new pmFieldDataModel())->getByTask($id);

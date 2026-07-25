@@ -131,6 +131,68 @@ class pmMcpSchemaTest extends TestCase
         pmMcpTaskHelper::parseTaskRef('---');
     }
 
+    // ---- dependencies: relation <-> stored row mapping ----
+
+    public function testDependsOnIsStoredOnTheDependentTask(): void
+    {
+        $row = pmMcpDependencyHelper::rowFor('depends_on', 10, 20, 'FS');
+        $this->assertSame(array('task_id' => 10, 'depends_on_task_id' => 20, 'type' => 'FS'), $row);
+    }
+
+    public function testBlocksIsStoredOnTheOtherTask(): void
+    {
+        // "10 blocks 20" is the same record as "20 depends on 10", so the row
+        // belongs to 20 — that inversion is what makes the relation mutual.
+        $row = pmMcpDependencyHelper::rowFor('blocks', 10, 20, 'SS');
+        $this->assertSame(array('task_id' => 20, 'depends_on_task_id' => 10, 'type' => 'SS'), $row);
+    }
+
+    public function testSymmetricRelationsIgnoreTheSchedulingType(): void
+    {
+        $this->assertSame(
+            array('task_id' => 10, 'depends_on_task_id' => 20, 'type' => 'RELATES_TO'),
+            pmMcpDependencyHelper::rowFor('relates_to', 10, 20, 'FF')
+        );
+        $this->assertSame(
+            'DUPLICATES',
+            pmMcpDependencyHelper::rowFor('duplicates', 10, 20)['type']
+        );
+    }
+
+    public function testInverseRelation(): void
+    {
+        $this->assertSame('blocks', pmMcpDependencyHelper::inverse('depends_on'));
+        $this->assertSame('depends_on', pmMcpDependencyHelper::inverse('blocks'));
+        $this->assertSame('relates_to', pmMcpDependencyHelper::inverse('relates_to'), 'symmetric relations invert to themselves');
+        $this->assertSame('duplicates', pmMcpDependencyHelper::inverse('duplicates'));
+    }
+
+    public function testRelationFromRowDependsOnTheSideYouReadFrom(): void
+    {
+        $row = array('id' => 1, 'task_id' => 10, 'depends_on_task_id' => 20, 'type' => 'FS');
+        $this->assertSame('depends_on', pmMcpDependencyHelper::relationFromRow($row, 10));
+        $this->assertSame('blocks', pmMcpDependencyHelper::relationFromRow($row, 20));
+        $this->assertSame(20, pmMcpDependencyHelper::counterpart($row, 10));
+        $this->assertSame(10, pmMcpDependencyHelper::counterpart($row, 20));
+
+        $related = array('id' => 2, 'task_id' => 10, 'depends_on_task_id' => 20, 'type' => 'RELATES_TO');
+        $this->assertSame('relates_to', pmMcpDependencyHelper::relationFromRow($related, 10));
+        $this->assertSame('relates_to', pmMcpDependencyHelper::relationFromRow($related, 20));
+    }
+
+    public function testNormalizeType(): void
+    {
+        $this->assertSame('FS', pmMcpDependencyHelper::normalizeType(''), 'FS is the default');
+        $this->assertSame('SF', pmMcpDependencyHelper::normalizeType(' sf '));
+    }
+
+    public function testNormalizeTypeRejectsSymmetricAndGarbage(): void
+    {
+        $this->expectException(waAPIException::class);
+        // Symmetric types are chosen through `relation`, not `type`.
+        pmMcpDependencyHelper::normalizeType('RELATES_TO');
+    }
+
     // ---- wiki: parseAccessRoles ----
 
     public function testParseAccessRoles(): void

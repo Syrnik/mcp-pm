@@ -56,7 +56,7 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpGetTaskTool());
         $registry->addTool(new pmMcpListTaskCommentsTool());
 
-        // ===== Stage 3 — Write: tasks (8 tools) =====
+        // ===== Stage 3 — Write: tasks (9 tools) =====
         $registry->addTool(new pmMcpCreateTaskTool());
         $registry->addTool(new pmMcpUpdateTaskTool());
         $registry->addTool(new pmMcpMoveTaskTool());
@@ -64,6 +64,7 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpAddTaskCommentTool());
         $registry->addTool(new pmMcpManageChecklistTool());
         $registry->addTool(new pmMcpManageWatchersTool());
+        $registry->addTool(new pmMcpManageDependenciesTool());
         $registry->addTool(new pmMcpDeleteTaskTool());
 
         // ===== Stage 4 — Write: projects (4 tools) =====
@@ -185,7 +186,7 @@ class mcpPmPlugin extends mcpPlugin
                     'description' => _wp('Read a sprint card: project, auto-fill statuses and automation settings.'),
                 ),
 
-                // ===== Tasks group — write (8 rights) =====
+                // ===== Tasks group — write (9 rights) =====
                 array(
                     'name'        => 'pm_create_task',
                     'group'       => 'pm.tasks',
@@ -234,6 +235,13 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Tasks'),
                     'title'       => _wp('Manage watchers'),
                     'description' => _wp('Add or remove task watchers.'),
+                ),
+                array(
+                    'name'        => 'pm_manage_dependencies',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Manage task relations'),
+                    'description' => _wp('Link or unlink two tasks (depends on, blocks, duplicates, relates to).'),
                 ),
                 array(
                     'name'        => 'pm_delete_task',

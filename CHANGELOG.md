@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `pm_manage_dependencies` — link and unlink tasks (Task #78.13). Until now the
+  plugin could only *read* relations, so an agent asked to link two tasks had
+  nothing to call and fell back to a mention in one task's description: a
+  one-sided link the other task never learned about. The tool states the
+  relation from `task_id`'s point of view — `depends_on`, `blocks`, `duplicates`,
+  `relates_to`, with a scheduling `type` (`FS`/`SS`/`FF`/`SF`) for the
+  directional ones — and writes the single `pm_task_dependency` row that pm reads
+  from both ends, picking the direction the relation implies: "A blocks B" is
+  stored on B, so A's card shows `blocks` and B's shows `depends_on`. Relations
+  are mutual by construction; no mirrored row is created (it would duplicate the
+  relation in both cards). One relation per pair: an identical request is
+  idempotent (`already_exists`), a competing one — including the reverse
+  dependency, which would make the pair block itself — is refused with
+  `conflict`. Removal takes either the other task or a `dependency_id`, works
+  from either end, and refuses an id that does not involve the named task. Both
+  tasks' relations come back in the response, and the row's `task.edit`
+  permission is enforced (the app's own AJAX endpoint checks nothing).
+
 - Task arguments accept the full task number, not just the id (Task #78.11).
   `task_id` (every task tool) and `parent_id` (`pm_create_task`,
   `pm_update_task`) now resolve `AUTH-32`, `auth 32`, `AUTH32`, `32-AUTH`
@@ -23,6 +41,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   returning that task alongside the subject matches.
 
 ### Changed
+- Relations in `pm_get_task` are annotated for agents: every entry now names the
+  other task under one predictable key (`related_task_id`,
+  `related_full_number`, `related_project_id`) and states the `relation` and the
+  `inverse_relation` the counterpart sees. Previously the counterpart hid behind
+  a different key per section (`depends_on_task_id`, `task_id`,
+  `related_task_id`) and carried a bare id with nothing to quote back.
 - A task reference whose prefix names another project is refused with
   `not_found` instead of returning that project's task of the same id; the
   error message states the task's real number.
