@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-26
+
 ### Added
 - `pm_manage_dependencies` — link and unlink tasks (Task #78.13). Until now the
   plugin could only *read* relations, so an agent asked to link two tasks had
