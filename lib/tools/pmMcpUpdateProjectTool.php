@@ -117,6 +117,7 @@ class pmMcpUpdateProjectTool extends pmMcpToolBase
             if ($data) {
                 $data['update_datetime'] = date('Y-m-d H:i:s');
                 $model->updateById($project_id, $data);
+                pmMcpTaskHelper::resetNumberConfig();
             }
             if ($workflow_ids !== null) {
                 $model->saveWorkflows($project_id, $workflow_ids);

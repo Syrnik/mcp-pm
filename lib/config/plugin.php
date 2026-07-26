@@ -2,7 +2,7 @@
 return array(
     'name'        => /*_wp*/('Project Management for MCP'),
     'description' => /*_wp*/('MCP tools for the Project Management (pm) app: projects, tasks, assignees, sprints, milestones and wiki.'),
-    'version'     => '1.0.0',
+    'version'     => '1.1.0',
     'vendor'      => '670917',
     'icon'        => 'img/icon16.png',
     'img'         => 'img/icon.svg',

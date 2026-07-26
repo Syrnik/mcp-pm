@@ -27,9 +27,6 @@ msgstr ""
 msgid "Only a project administrator can perform this action."
 msgstr ""
 
-msgid "Task not found."
-msgstr ""
-
 msgid "You are not a member of this task's project."
 msgstr ""
 
@@ -315,9 +312,6 @@ msgstr ""
 msgid "You are not a member of this sprint's project."
 msgstr ""
 
-msgid "Get a full task card: description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
-msgstr ""
-
 msgid "Read a wiki page with its content. Requires the wiki.view or wiki.edit permission and that the page is visible to the caller."
 msgstr ""
 
@@ -430,4 +424,70 @@ msgid "A page cannot be moved into itself."
 msgstr ""
 
 msgid "Invalid parent page (not in this project, or it is a descendant of this page)."
+msgstr ""
+
+msgid "\"%s\" is not a task reference. Pass a task id (32) or a full task number (AUTH-32)."
+msgstr ""
+
+msgid "Task \"%s\" not found: task %d is %s."
+msgstr ""
+
+msgid "Task \"%s\" not found."
+msgstr ""
+
+msgid "Get a full task card by id or full task number (AUTH-32): description, tags, subtasks, milestone, participants, checklist, dependencies, custom fields, logged time and allowed status transitions. Requires membership of the task's project."
+msgstr ""
+
+msgid "Unknown dependency type \"%s\". Use one of: FS, SS, FF, SF."
+msgstr ""
+
+msgid "Manage task relations"
+msgstr ""
+
+msgid "Link or unlink two tasks (depends on, blocks, duplicates, relates to)."
+msgstr ""
+
+msgid "Link or unlink two tasks. The relation is stated from task_id's side (depends_on, blocks, duplicates, relates_to) and is stored once, so it shows on both cards with the inverse wording. Requires the task.edit permission. Returns the relations of both tasks."
+msgstr ""
+
+msgid "relation is required to add a relation. Use one of: %s."
+msgstr ""
+
+msgid "related_task_id is required to add a relation."
+msgstr ""
+
+msgid "A task cannot be related to itself."
+msgstr ""
+
+msgid "These tasks are already related: %1$s %2$s %3$s (%4$s). Remove that relation before adding another one."
+msgstr ""
+
+msgid "You do not have permission to edit task %s, which would carry this relation."
+msgstr ""
+
+msgid "Unknown relation \"%s\"."
+msgstr ""
+
+msgid "Relation not found."
+msgstr ""
+
+msgid "That relation does not involve this task."
+msgstr ""
+
+msgid "These tasks are not related."
+msgstr ""
+
+msgid "These tasks have several relations. Pass dependency_id to say which one to remove."
+msgstr ""
+
+msgid "Pass related_task_id or dependency_id to remove a relation."
+msgstr ""
+
+msgid "The task carrying this relation no longer exists."
+msgstr ""
+
+msgid "You are not a member of the project carrying this relation."
+msgstr ""
+
+msgid "You do not have permission to edit task %s, which carries this relation."
 msgstr ""

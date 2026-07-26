@@ -27,7 +27,7 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                 'assignee_contact_id' => array('type' => 'integer', 'minimum' => 1, 'description' => 'Assignee contact id (must be a project participant).'),
                 'milestone_id'        => array('type' => 'integer', 'minimum' => 1, 'description' => 'Milestone id (must belong to the project).'),
                 'sprint_id'           => array('type' => 'integer', 'minimum' => 1, 'description' => 'Sprint id (must belong to the project).'),
-                'parent_id'           => array('type' => 'integer', 'minimum' => 1, 'description' => 'Parent task id for a subtask (same project).'),
+                'parent_id'           => self::taskRefSchema('Parent task for a subtask (same project).'),
                 'start_date'          => array('type' => 'string', 'description' => 'Start date (YYYY-MM-DD).'),
                 'due_date'            => array('type' => 'string', 'description' => 'Due date (YYYY-MM-DD).'),
                 'deadline'            => array('type' => 'string', 'description' => 'Hard deadline (YYYY-MM-DD).'),
@@ -81,10 +81,17 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                     $data[$f] = $v;
                 }
             }
-            foreach (array('assignee_contact_id', 'milestone_id', 'sprint_id', 'parent_id') as $f) {
+            foreach (array('assignee_contact_id', 'milestone_id', 'sprint_id') as $f) {
                 $v = $this->argInt($arguments, $f);
                 $data[$f] = $v > 0 ? $v : null;
             }
+            // The parent may be quoted as a full number; resolving it here also
+            // rejects a parent the caller cannot see before pmTask::create()
+            // does its own same-project check.
+            $parent_ref = $this->argRef($arguments, 'parent_id');
+            $data['parent_id'] = ($parent_ref === '' || $parent_ref === '0')
+                ? null
+                : (int) pmMcpTaskHelper::loadAccessibleTask($parent_ref)['id'];
             if (isset($arguments['estimated_hours']) && $arguments['estimated_hours'] !== '') {
                 $data['estimated_hours'] = (float) $arguments['estimated_hours'];
             }

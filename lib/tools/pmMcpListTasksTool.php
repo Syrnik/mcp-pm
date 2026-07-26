@@ -59,7 +59,7 @@ class pmMcpListTasksTool extends pmMcpToolBase
                 ),
                 'search' => array(
                     'type'        => 'string',
-                    'description' => 'Substring match against the task subject.',
+                    'description' => 'Substring match against the task subject. A task id ("32") or full task number ("AUTH-32") also returns that exact task.',
                 ),
                 'limit' => array(
                     'type'        => 'integer',
@@ -126,6 +126,25 @@ class pmMcpListTasksTool extends pmMcpToolBase
                 }
                 foreach ($group as $t) {
                     $flat[] = $t;
+                }
+            }
+
+            // A search term that reads as a task reference ("32", "AUTH-32")
+            // returns that task too: the subject match alone would miss it, and
+            // this is how a user quotes a task they already know.
+            if ($search !== '') {
+                $referenced = pmMcpTaskHelper::findAccessibleTask($search);
+                if ($referenced && in_array((int) $referenced['project_id'], $project_ids, true)) {
+                    $known = false;
+                    foreach ($flat as $t) {
+                        if ((int) $t['id'] === (int) $referenced['id']) {
+                            $known = true;
+                            break;
+                        }
+                    }
+                    if (!$known && ($status_id <= 0 || (int) $referenced['status_id'] === $status_id)) {
+                        array_unshift($flat, $referenced);
+                    }
                 }
             }
 

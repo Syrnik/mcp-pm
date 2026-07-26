@@ -5,6 +5,65 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.1.0] - 2026-07-26
+
+### Added
+- `pm_manage_dependencies` — link and unlink tasks (Task #78.13). Until now the
+  plugin could only *read* relations, so an agent asked to link two tasks had
+  nothing to call and fell back to a mention in one task's description: a
+  one-sided link the other task never learned about. The tool states the
+  relation from `task_id`'s point of view — `depends_on`, `blocks`, `duplicates`,
+  `relates_to`, with a scheduling `type` (`FS`/`SS`/`FF`/`SF`) for the
+  directional ones — and writes the single `pm_task_dependency` row that pm reads
+  from both ends, picking the direction the relation implies: "A blocks B" is
+  stored on B, so A's card shows `blocks` and B's shows `depends_on`. Relations
+  are mutual by construction; no mirrored row is created (it would duplicate the
+  relation in both cards). One relation per pair: an identical request is
+  idempotent (`already_exists`), a competing one — including the reverse
+  dependency, which would make the pair block itself — is refused with
+  `conflict`. Removal takes either the other task or a `dependency_id`, works
+  from either end, and refuses an id that does not involve the named task. Both
+  tasks' relations come back in the response, and the row's `task.edit`
+  permission is enforced (the app's own AJAX endpoint checks nothing).
+
+- Task arguments accept the full task number, not just the id (Task #78.11).
+  `task_id` (every task tool) and `parent_id` (`pm_create_task`,
+  `pm_update_task`) now resolve `AUTH-32`, `auth 32`, `AUTH32`, `32-AUTH`
+  (postfix projects) and `#32` as readily as `32`: case, spaces and punctuation
+  are ignored, and a prefix containing digits is read against the projects'
+  actual prefixes rather than guessed. An agent told "look at AUTH-32" no longer
+  has to hunt for the numeric id first.
+- Every serialised task carries `full_number` — the number as pm displays it
+  (`AUTH-32`, `32-AUTH`, or `#32` for a project with no prefix) — in listings,
+  task cards and subtasks, so the id an agent reads back is the one a user
+  recognises. `pm_delete_task` and `pm_list_task_comments` echo it too.
+- `pm_list_tasks` resolves a `search` term that reads as a task reference,
+  returning that task alongside the subject matches.
+
+### Changed
+- Relations in `pm_get_task` are annotated for agents: every entry now names the
+  other task under one predictable key (`related_task_id`,
+  `related_full_number`, `related_project_id`) and states the `relation` and the
+  `inverse_relation` the counterpart sees. Previously the counterpart hid behind
+  a different key per section (`depends_on_task_id`, `task_id`,
+  `related_task_id`) and carried a bare id with nothing to quote back.
+- A task reference whose prefix names another project is refused with
+  `not_found` instead of returning that project's task of the same id; the
+  error message states the task's real number.
+
+### Fixed
+- `pm_move_task` records the status change in the task's history (Task #78.14).
+  A move made through the tool left the task in the new status but no trace of
+  who moved it, or from where: the app's own status change goes through
+  `pmTask::save()`, which writes the `status_changed` activity entry, while the
+  `pmTask::moveToStatus()` path the tool uses only updates the row and notifies.
+  The entry now appears with the same from/to status names the app renders, so
+  agent-made moves read like any other in the task history and the project
+  activity feed. Should a future pm version log the move itself, the tool
+  detects the entry and does not duplicate it.
+
 ## [1.0.0] - 2026-07-22
 
 ### Added
