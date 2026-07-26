@@ -68,6 +68,34 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $this->assertSame($target, $r['task']['status_id']);
     }
 
+    public function testMoveTaskLogsStatusChange(): void
+    {
+        $created = $this->makeTask('ZZ Logged move');
+        $allowed = $created['task']['allowed_statuses'] ?? array();
+        if (!$allowed) {
+            $this->markTestSkipped('workflow exposes no transitions from the initial status');
+        }
+        $task_id = (int) $created['task_id'];
+        $from = (int) $created['task']['status_id'];
+        $target = (int) (is_array($allowed[0]) ? $allowed[0]['id'] : $allowed[0]);
+
+        $r = $this->callTool(new pmMcpMoveTaskTool(), array('task_id' => $task_id, 'status_id' => $target));
+        $this->assertTrue($r['ok'], json_encode($r));
+
+        $entries = array_values(array_filter(
+            (new pmActivityLogModel())->getByTask($task_id),
+            static function ($e) {
+                return $e['action'] === 'status_changed';
+            }
+        ));
+        $this->assertCount(1, $entries, 'the move must leave exactly one status_changed entry');
+
+        $params = json_decode((string) $entries[0]['params'], true);
+        $this->assertSame($from, (int) $params['from_id']);
+        $this->assertSame($target, (int) $params['to_id']);
+        $this->assertNotSame('', (string) $params['to_name'], 'the entry must carry the target status name');
+    }
+
     public function testAddComment(): void
     {
         $created = $this->makeTask();

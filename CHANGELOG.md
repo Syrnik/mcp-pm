@@ -51,6 +51,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `not_found` instead of returning that project's task of the same id; the
   error message states the task's real number.
 
+### Fixed
+- `pm_move_task` records the status change in the task's history (Task #78.14).
+  A move made through the tool left the task in the new status but no trace of
+  who moved it, or from where: the app's own status change goes through
+  `pmTask::save()`, which writes the `status_changed` activity entry, while the
+  `pmTask::moveToStatus()` path the tool uses only updates the row and notifies.
+  The entry now appears with the same from/to status names the app renders, so
+  agent-made moves read like any other in the task history and the project
+  activity feed. Should a future pm version log the move itself, the tool
+  detects the entry and does not duplicate it.
+
 ## [1.0.0] - 2026-07-22
 
 ### Added
