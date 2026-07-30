@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-07-30
+
 ### Fixed
 - `pm_create_task` no longer reads as if a milestone were mandatory (Task #320).
   `milestone_id`, `sprint_id` and `assignee_contact_id` are optional, but the
