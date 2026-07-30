@@ -491,3 +491,24 @@ msgstr ""
 
 msgid "You do not have permission to edit task %s, which carries this relation."
 msgstr ""
+
+msgid "milestone_id %d does not belong to project %d; see available_milestones."
+msgstr ""
+
+msgid "milestone_id %d does not belong to project %d, which has no milestones at all."
+msgstr ""
+
+msgid "sprint_id %d does not belong to project %d; see available_sprints."
+msgstr ""
+
+msgid "sprint_id %d does not belong to project %d, which has no sprints at all."
+msgstr ""
+
+msgid "assignee_contact_id %d is not a participant of project %d; see available_participants."
+msgstr ""
+
+msgid "These fields are optional: omit an argument, or pass 0, to leave it empty."
+msgstr ""
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Returns the created task card."
+msgstr ""

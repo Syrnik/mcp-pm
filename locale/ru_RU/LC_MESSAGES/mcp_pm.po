@@ -491,3 +491,24 @@ msgstr "Вы не участник проекта, в котором храни�
 
 msgid "You do not have permission to edit task %s, which carries this relation."
 msgstr "У вас нет права редактировать задачу %s, в которой хранится эта связь."
+
+msgid "milestone_id %d does not belong to project %d; see available_milestones."
+msgstr "milestone_id %d не принадлежит проекту %d; см. available_milestones."
+
+msgid "milestone_id %d does not belong to project %d, which has no milestones at all."
+msgstr "milestone_id %d не принадлежит проекту %d, в котором вообще нет вех."
+
+msgid "sprint_id %d does not belong to project %d; see available_sprints."
+msgstr "sprint_id %d не принадлежит проекту %d; см. available_sprints."
+
+msgid "sprint_id %d does not belong to project %d, which has no sprints at all."
+msgstr "sprint_id %d не принадлежит проекту %d, в котором вообще нет спринтов."
+
+msgid "assignee_contact_id %d is not a participant of project %d; see available_participants."
+msgstr "assignee_contact_id %d не является участником проекта %d; см. available_participants."
+
+msgid "These fields are optional: omit an argument, or pass 0, to leave it empty."
+msgstr "Эти поля необязательные: не передавайте аргумент или передайте 0, чтобы оставить поле пустым."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Returns the created task card."
+msgstr "Создать задачу в проекте. Требуется участие в проекте с правом task.create. workflow_id обязателен, если у проекта больше одного workflow; исполнитель, веха и спринт необязательны — не передавайте их (или передайте 0), чтобы оставить пустыми. Возвращает карточку созданной задачи."

@@ -79,6 +79,7 @@ abstract class pmMcpIntegrationTestCase extends TestCase
             (new pmSprintFillStatusModel())->deleteByField('sprint_id', $s['id']);
             (new pmSprintModel())->deleteById($s['id']);
         }
+        (new pmMilestoneModel())->deleteByField('project_id', $pid);
         (new pmActivityLogModel())->deleteByField('project_id', $pid);
         (new pmProjectUserModel())->deleteByField('project_id', $pid);
         (new pmProjectWorkflowModel())->deleteByField('project_id', $pid);
