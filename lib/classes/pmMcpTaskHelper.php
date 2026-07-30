@@ -297,6 +297,97 @@ class pmMcpTaskHelper
     }
 
     /**
+     * Check the project-scoped references of a task write — milestone, sprint,
+     * assignee — and describe every mismatch at once.
+     *
+     * pmTask::create()/save() validate the same three, but one at a time and
+     * with a bare "does not belong to this project". An agent that guessed an
+     * id learns neither what the project actually offers nor that the field was
+     * optional to begin with: a project with no milestones reads exactly like a
+     * wrong milestone id, and fixing one reference only surfaces the next.
+     * Collecting the mismatches here and naming the alternatives turns three
+     * failed round-trips into one corrected call.
+     *
+     * @param int   $project_id
+     * @param array $refs  Task data keyed by field name. A null, 0 or absent
+     *                     value means "leave the field empty" and is never a
+     *                     mismatch.
+     * @return array|null  array{message: string, extra: array} for a softFail,
+     *                     or null when every reference fits the project.
+     */
+    public static function checkProjectRefs($project_id, array $refs)
+    {
+        $project_id = (int) $project_id;
+        $messages = array();
+        $extra = array();
+
+        $milestone_id = isset($refs['milestone_id']) ? (int) $refs['milestone_id'] : 0;
+        if ($milestone_id > 0) {
+            $milestones = (new pmMilestoneModel())->getByProject($project_id);
+            if (!isset($milestones[$milestone_id])) {
+                $options = array();
+                foreach ($milestones as $m) {
+                    $options[] = array(
+                        'id'     => (int) $m['id'],
+                        'name'   => $m['name'],
+                        'status' => $m['status'] ?? null,
+                    );
+                }
+                $messages[] = $options
+                    ? sprintf(_wp('milestone_id %d does not belong to project %d; see available_milestones.'), $milestone_id, $project_id)
+                    : sprintf(_wp('milestone_id %d does not belong to project %d, which has no milestones at all.'), $milestone_id, $project_id);
+                $extra['available_milestones'] = $options;
+            }
+        }
+
+        $sprint_id = isset($refs['sprint_id']) ? (int) $refs['sprint_id'] : 0;
+        if ($sprint_id > 0) {
+            $sprints = (new pmSprintModel())->getByProject($project_id);
+            if (!isset($sprints[$sprint_id])) {
+                $options = array();
+                foreach ($sprints as $s) {
+                    $options[] = array(
+                        'id'     => (int) $s['id'],
+                        'name'   => $s['name'],
+                        'status' => $s['status'] ?? null,
+                    );
+                }
+                $messages[] = $options
+                    ? sprintf(_wp('sprint_id %d does not belong to project %d; see available_sprints.'), $sprint_id, $project_id)
+                    : sprintf(_wp('sprint_id %d does not belong to project %d, which has no sprints at all.'), $sprint_id, $project_id);
+                $extra['available_sprints'] = $options;
+            }
+        }
+
+        $assignee_id = isset($refs['assignee_contact_id']) ? (int) $refs['assignee_contact_id'] : 0;
+        if ($assignee_id > 0) {
+            $participants = (new pmProjectUserModel())->getByProject($project_id);
+            if (!isset($participants[$assignee_id])) {
+                $options = array();
+                foreach ($participants as $p) {
+                    $options[] = array(
+                        'contact_id' => (int) $p['contact_id'],
+                        'name'       => $p['name'] ?? '',
+                        'role'       => $p['role'],
+                    );
+                }
+                $messages[] = sprintf(_wp('assignee_contact_id %d is not a participant of project %d; see available_participants.'), $assignee_id, $project_id);
+                $extra['available_participants'] = $options;
+            }
+        }
+
+        if (!$messages) {
+            return null;
+        }
+        $messages[] = _wp('These fields are optional: omit an argument, or pass 0, to leave it empty.');
+
+        return array(
+            'message' => implode(' ', $messages),
+            'extra'   => $extra,
+        );
+    }
+
+    /**
      * Load a task, check project access, and return it as a pmTask domain
      * entity ready for mutation. The raw row is returned by reference-style
      * out-param for callers that also need the array (e.g. type_slug).

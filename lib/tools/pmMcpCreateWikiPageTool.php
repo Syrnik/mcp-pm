@@ -21,7 +21,7 @@ class pmMcpCreateWikiPageTool extends pmMcpToolBase
                 'title'        => array('type' => 'string', 'minLength' => 1, 'description' => 'Page title.'),
                 'type'         => array('type' => 'string', 'enum' => array('article', 'section'), 'description' => 'Page type. Defaults to article. A section holds no content.'),
                 'content'      => array('type' => 'string', 'description' => 'Page body (ignored for a section). Project content format, usually Markdown.'),
-                'parent_id'    => array('type' => 'integer', 'minimum' => 1, 'description' => 'Parent page id (must belong to the same project). Omit for a top-level page.'),
+                'parent_id'    => array('type' => 'integer', 'minimum' => 0, 'description' => 'Parent page id (must belong to the same project). Omit or 0 for a top-level page.'),
                 'published'    => array('type' => 'boolean', 'description' => 'Whether the page is published. Defaults to false (draft, visible only to the author and admins/managers).'),
                 'is_public'    => array('type' => 'boolean', 'description' => 'Whether a published page is visible to everyone. Defaults to false.'),
                 'access_roles' => array('type' => 'array', 'items' => array('type' => 'string'), 'description' => 'Role slugs allowed to see a published, non-public page (e.g. ["member","viewer"]).'),

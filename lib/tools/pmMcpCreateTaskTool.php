@@ -9,7 +9,7 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_create_task'; }
     public function getRight()       { return 'pm_create_task'; }
-    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow. Returns the created task card.'); }
+    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Returns the created task card.'); }
 
     public function getInputSchema()
     {
@@ -24,10 +24,10 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                 'status_id'           => array('type' => 'integer', 'minimum' => 1, 'description' => 'Initial status id. Defaults to the first status when omitted.'),
                 'priority'            => array('type' => 'string', 'description' => 'Priority slug (e.g. low, normal, high). Defaults to normal.'),
                 'type_slug'           => array('type' => 'string', 'description' => 'Task type slug.'),
-                'assignee_contact_id' => array('type' => 'integer', 'minimum' => 1, 'description' => 'Assignee contact id (must be a project participant).'),
-                'milestone_id'        => array('type' => 'integer', 'minimum' => 1, 'description' => 'Milestone id (must belong to the project).'),
-                'sprint_id'           => array('type' => 'integer', 'minimum' => 1, 'description' => 'Sprint id (must belong to the project).'),
-                'parent_id'           => self::taskRefSchema('Parent task for a subtask (same project).'),
+                'assignee_contact_id' => array('type' => 'integer', 'minimum' => 0, 'description' => 'Assignee contact id (must be a project participant). Optional: omit or 0 leaves the task unassigned.'),
+                'milestone_id'        => array('type' => 'integer', 'minimum' => 0, 'description' => 'Milestone id (must belong to the project). Optional: omit or 0 for no milestone.'),
+                'sprint_id'           => array('type' => 'integer', 'minimum' => 0, 'description' => 'Sprint id (must belong to the project). Optional: omit or 0 puts the task in the backlog.'),
+                'parent_id'           => self::taskRefSchema('Parent task for a subtask (same project). Optional: omit or 0 for a top-level task.'),
                 'start_date'          => array('type' => 'string', 'description' => 'Start date (YYYY-MM-DD).'),
                 'due_date'            => array('type' => 'string', 'description' => 'Due date (YYYY-MM-DD).'),
                 'deadline'            => array('type' => 'string', 'description' => 'Hard deadline (YYYY-MM-DD).'),
@@ -97,6 +97,14 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
             }
             if (!empty($arguments['custom_fields']) && is_array($arguments['custom_fields'])) {
                 $data['_custom_fields'] = $arguments['custom_fields'];
+            }
+
+            // Report every reference that does not fit the project in one
+            // answer, with the project's own options — pmTask::create() would
+            // otherwise reject them one per call and name no alternative.
+            $ref_problem = pmMcpTaskHelper::checkProjectRefs($project_id, $data);
+            if ($ref_problem !== null) {
+                return $this->softFail('invalid_param', $ref_problem['message'], $ref_problem['extra']);
             }
 
             $task_id = pmTask::create($data, $this->getUserId());

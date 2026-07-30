@@ -30,7 +30,7 @@ class pmMcpCreateProjectTool extends pmMcpToolBase
                 'prefix'           => array('type' => 'string', 'description' => 'Task number prefix.'),
                 'number_mode'      => array('type' => 'string', 'enum' => array('prefix', 'postfix'), 'description' => 'Where the prefix goes relative to the number.'),
                 'number_separator' => array('type' => 'string', 'description' => 'Separator between prefix and number.'),
-                'parent_id'        => array('type' => 'integer', 'minimum' => 1, 'description' => 'Parent project id, for a sub-project.'),
+                'parent_id'        => array('type' => 'integer', 'minimum' => 0, 'description' => 'Parent project id, for a sub-project. Omit or 0 for a top-level project.'),
             ),
         );
     }

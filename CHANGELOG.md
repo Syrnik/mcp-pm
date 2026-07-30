@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-07-30
+
+### Fixed
+- `pm_create_task` no longer reads as if a milestone were mandatory (Task #320).
+  `milestone_id`, `sprint_id` and `assignee_contact_id` are optional, but the
+  schema declared `minimum: 1` on all three — the opposite of `pm_update_task`,
+  where 0 has always meant "clear this field". An agent that guessed a milestone
+  id, was told it "does not belong to this project", and then retried with 0 —
+  the natural way to spell "none" — got `Argument "milestone_id" must be >= 1`
+  and concluded, reasonably, that some non-zero milestone was required. All
+  three now accept 0 as "leave empty", matching `pm_update_task`, and the tool
+  description says so. The same `minimum: 1` on the optional `parent_id` of
+  `pm_create_project` and `pm_create_wiki_page` is relaxed for the same reason.
+- A milestone, sprint or assignee that belongs to another project is now
+  reported with the project's own options — `available_milestones`,
+  `available_sprints`, `available_participants` — and all mismatches come back
+  in one answer instead of one per call. Previously `pmTask::create()` rejected
+  the first offending reference with a bare "Milestone does not belong to this
+  project", which told the caller neither what to pass instead nor that a
+  project with no milestones at all reads exactly the same as a wrong id;
+  fixing one reference only surfaced the next. `pm_update_task` gets the same
+  treatment.
+
 ## [1.1.0] - 2026-07-26
 
 ### Added

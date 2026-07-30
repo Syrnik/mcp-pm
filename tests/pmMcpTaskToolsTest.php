@@ -213,6 +213,118 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $this->assertSame($ref, $r['full_number']);
     }
 
+    /**
+     * A milestone and a sprint of another project are rejected together, in one
+     * answer, with this project's own (empty) options — not one per call with a
+     * bare "does not belong to this project" (Task #320).
+     */
+    public function testCreateTaskReportsForeignReferencesAtOnce(): void
+    {
+        $other_project_id = $this->makeProject('ZZ MCP Other ' . uniqid());
+        $this->extra_project_ids[] = $other_project_id;
+
+        $foreign_milestone_id = (int) (new pmMilestoneModel())->insert(array(
+            'project_id' => $other_project_id,
+            'name'       => 'ZZ Foreign Milestone',
+            'status'     => 'active',
+            'sort'       => 1,
+        ));
+        $sprint_model = new pmSprintModel();
+        $foreign_sprint_id = (int) $sprint_model->insert(array(
+            'name'     => 'ZZ Foreign Sprint',
+            'status'   => 'planned',
+            'duration' => 1,
+            'sort'     => 1,
+        ));
+        (new pmSprintProjectModel())->insert(array(
+            'sprint_id'  => $foreign_sprint_id,
+            'project_id' => $other_project_id,
+        ));
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id'   => $this->project_id,
+            'subject'      => 'ZZ Foreign refs',
+            'milestone_id' => $foreign_milestone_id,
+            'sprint_id'    => $foreign_sprint_id,
+        ));
+
+        $this->assertFalse($r['ok'], json_encode($r));
+        $this->assertSame('invalid_param', $r['error_code']);
+        // Both mismatches in one answer, not just the first one pm would hit.
+        $this->assertStringContainsString('milestone_id', $r['error_message']);
+        $this->assertStringContainsString('sprint_id', $r['error_message']);
+        // The project has neither, so the options are empty — which is exactly
+        // the fact the old bare message hid.
+        $this->assertSame(array(), $r['available_milestones']);
+        $this->assertSame(array(), $r['available_sprints']);
+
+        // And the same references are refused on update.
+        $task = $this->makeTask('ZZ Foreign refs target');
+        $u = $this->callTool(new pmMcpUpdateTaskTool(), array(
+            'task_id'      => $task['task_id'],
+            'milestone_id' => $foreign_milestone_id,
+        ));
+        $this->assertFalse($u['ok'], json_encode($u));
+        $this->assertSame('invalid_param', $u['error_code']);
+
+        $sprint_model->deleteById($foreign_sprint_id);
+        (new pmSprintProjectModel())->deleteByField('sprint_id', $foreign_sprint_id);
+    }
+
+    /**
+     * A milestone that does belong to the project is listed back when the
+     * caller names a different one, so the correction needs no extra lookup.
+     */
+    public function testForeignMilestoneAnswerListsTheProjectsOwn(): void
+    {
+        $own_milestone_id = (int) (new pmMilestoneModel())->insert(array(
+            'project_id' => $this->project_id,
+            'name'       => 'ZZ Own Milestone',
+            'status'     => 'active',
+            'sort'       => 1,
+        ));
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id'   => $this->project_id,
+            'subject'      => 'ZZ Wrong milestone',
+            'milestone_id' => $own_milestone_id + 100000,
+        ));
+        $this->assertFalse($r['ok'], json_encode($r));
+        $this->assertSame(
+            array($own_milestone_id),
+            array_column($r['available_milestones'], 'id')
+        );
+
+        // The right one goes through.
+        $ok = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id'   => $this->project_id,
+            'subject'      => 'ZZ Right milestone',
+            'milestone_id' => $own_milestone_id,
+        ));
+        $this->assertTrue($ok['ok'], json_encode($ok));
+        $this->assertSame($own_milestone_id, $ok['task']['milestone_id']);
+    }
+
+    /** 0 means "no milestone / no sprint / unassigned", not an invalid id. */
+    public function testCreateTaskTreatsZeroReferencesAsEmpty(): void
+    {
+        $tool = new pmMcpCreateTaskTool();
+        $args = array(
+            'project_id'          => $this->project_id,
+            'subject'             => 'ZZ Zero refs',
+            'milestone_id'        => 0,
+            'sprint_id'           => 0,
+            'assignee_contact_id' => 0,
+        );
+        $this->assertSame(array(), $tool->validate($args), 'zero must pass schema validation');
+
+        $r = $this->callTool($tool, $args);
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertNull($r['task']['milestone_id']);
+        $this->assertNull($r['task']['sprint_id']);
+        $this->assertNull($r['task']['assignee_contact_id']);
+    }
+
     public function testDeleteTaskRequiresConfirm(): void
     {
         $created = $this->makeTask();

@@ -83,6 +83,14 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
                 return $this->softFail('invalid_param', _wp('No fields to update.'));
             }
 
+            // Same one-shot reference report as pm_create_task: save() rejects
+            // a foreign milestone / sprint / assignee one per call, naming no
+            // alternative.
+            $ref_problem = pmMcpTaskHelper::checkProjectRefs((int) $row['project_id'], $data);
+            if ($ref_problem !== null) {
+                return $this->softFail('invalid_param', $ref_problem['message'], $ref_problem['extra']);
+            }
+
             $entity->save($data, $this->getUserId());
 
             return $this->ok(array(

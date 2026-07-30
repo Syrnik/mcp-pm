@@ -105,6 +105,45 @@ class pmMcpSchemaTest extends TestCase
         $this->assertNotEmpty($errors, 'invalid status enum must be reported');
     }
 
+    /**
+     * The nullable references are optional, and 0 is how an LLM spells "none".
+     * pm_create_task used to declare minimum=1 on all three, so an agent that
+     * hit "milestone does not belong to this project" and retried with 0 was
+     * told the argument "must be >= 1" — reading, correctly, that some non-zero
+     * milestone was mandatory. Keep create and update agreeing on 0.
+     */
+    public function testCreateTaskAcceptsZeroForNullableReferences(): void
+    {
+        $args = array(
+            'project_id'          => 1,
+            'subject'             => 'X',
+            'milestone_id'        => 0,
+            'sprint_id'           => 0,
+            'assignee_contact_id' => 0,
+        );
+        $this->assertSame(array(), (new pmMcpCreateTaskTool())->validate($args));
+
+        $this->assertSame(array(), (new pmMcpUpdateTaskTool())->validate(array(
+            'task_id'             => 1,
+            'milestone_id'        => 0,
+            'sprint_id'           => 0,
+            'assignee_contact_id' => 0,
+        )));
+    }
+
+    public function testOptionalParentIdsAcceptZero(): void
+    {
+        $this->assertSame(array(), (new pmMcpCreateProjectTool())->validate(array(
+            'name'      => 'X',
+            'parent_id' => 0,
+        )));
+        $this->assertSame(array(), (new pmMcpCreateWikiPageTool())->validate(array(
+            'project_id' => 1,
+            'title'      => 'X',
+            'parent_id'  => 0,
+        )));
+    }
+
     public function testValidateCoercesNumericTaskReference(): void
     {
         // task_id is declared as a string so "AUTH-32" validates; an integer id
