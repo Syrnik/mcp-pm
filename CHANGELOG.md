@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-30
+
 ### Added
 - The plugin now publishes **skills** — agent-facing markdown documentation
   served through the MCP app's skill registry (Task PMCP-234). Until now an
