@@ -127,10 +127,11 @@ containing `..`. Skill ids are kebab-case and appear in the public URI
 **Build the path with `DIRECTORY_SEPARATOR`**, not the forward slash
 `mcpPlugin`'s docblock shows. `mcpSkillRegistry::resolvePluginRelative()` gates
 the declared path with `strncmp($rel, 'skills' . DIRECTORY_SEPARATOR, 7)`, so on
-Windows a literal `'skills/foo.md'` fails the check and the skill is dropped
-**silently** — no exception, no log line, just an empty `resources/list`. On
-POSIX the two spellings are identical, so the mismatch does not show up in
-production and only bites on a Windows dev box. We do not control the mcp app,
+Windows a literal `'skills/foo.md'` fails the check and the skill is dropped: no
+exception, just an empty `resources/list`. It does land in `wa-log/mcp.log`, but
+as `rejected unsafe path`, which reads like a traversal attempt rather than a
+separator mismatch. On POSIX the two spellings are identical, so this only bites
+on a Windows dev box. We do not control the mcp app,
 so the plugin matches the core's check rather than its docblock;
 `testEverySkillSurvivesTheRegistryPathCheck` runs the core's own resolver to
 catch a regression on whichever platform the suite runs.

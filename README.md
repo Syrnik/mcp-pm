@@ -120,8 +120,10 @@ is missing or a file in `skills/` is left unregistered.
 One wrinkle worth knowing: the declared paths are built with
 `DIRECTORY_SEPARATOR` rather than the forward slash `mcpPlugin`'s docblock
 shows, because `mcpSkillRegistry` compares the path against
-`'skills' . DIRECTORY_SEPARATOR` and drops a non-matching one silently. The two
-spellings are the same on POSIX; on Windows only the latter survives.
+`'skills' . DIRECTORY_SEPARATOR` and drops a non-matching one — no exception,
+just an empty `resources/list` and a `rejected unsafe path` line in
+`wa-log/mcp.log`. The two spellings are the same on POSIX; on Windows only the
+latter survives.
 
 ## Dependencies
 

@@ -33,8 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The declared paths are built with `DIRECTORY_SEPARATOR` rather than the
   forward slash `mcpPlugin`'s docblock shows: `mcpSkillRegistry` gates the path
   against `'skills' . DIRECTORY_SEPARATOR` and drops a non-matching one without
-  an exception or a log line, so on Windows the documented spelling yields an
-  empty `resources/list`. The two forms are identical on POSIX. A test runs the
+  raising anything, so on Windows the documented spelling yields an empty
+  `resources/list`; the rejection is logged to `wa-log/mcp.log` as
+  `rejected unsafe path`, which reads like a traversal attempt rather than a
+  separator mismatch. The two forms are identical on POSIX. A test runs the
   registry's own resolver so the discrepancy cannot come back unnoticed.
 
 ### Changed

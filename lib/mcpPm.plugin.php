@@ -110,12 +110,14 @@ class mcpPmPlugin extends mcpPlugin
      *     strncmp($rel, 'skills' . DIRECTORY_SEPARATOR, 7) !== 0
      *
      * so on Windows a literal "skills/foo.md" fails the check and the skill is
-     * dropped from the registry without a log line — resources/list simply
-     * comes back empty. On POSIX DIRECTORY_SEPARATOR is "/", so this spelling
-     * is byte-identical to the documented one; on Windows it is the only one
-     * that survives. We do not control the mcp app, so the plugin matches the
-     * core's check instead of the core's docblock. Revisit if mcp normalises
-     * the separator itself.
+     * dropped from the registry: no exception, resources/list simply comes back
+     * empty. It is logged to wa-log/mcp.log, but as "rejected unsafe path",
+     * which sends whoever reads it looking for a traversal attempt rather than
+     * a separator mismatch. On POSIX DIRECTORY_SEPARATOR is "/", so this
+     * spelling is byte-identical to the documented one; on Windows it is the
+     * only one that survives. We do not control the mcp app, so the plugin
+     * matches the core's check instead of the core's docblock. Revisit if mcp
+     * normalises the separator itself.
      *
      * @param array $groups  Passed by reference; add a 'pm' entry.
      */
