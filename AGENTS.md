@@ -157,8 +157,14 @@ php wa.php locale mcp/plugins/pm
   tabbed strings.
 - Translate the new `msgid`s in `locale/ru_RU/LC_MESSAGES/mcp_pm.po`; `en_US`
   can stay empty (gettext falls back to the English source `msgid`).
-- Do **not** commit `.mo` files — the release workflow compiles them from the
-  `.po` files (see below); they are git-ignored.
+- Do **not** commit `.mo` files, and do not generate them locally — the release
+  workflow compiles them from the `.po` files (see below). They are deliberately
+  **not** listed in `.gitignore`: `compress-app-plugin.php` merges `.gitignore`
+  into its own exclude list, so a rule meant for git alone also stripped the
+  freshly compiled catalogues out of the release bundle. Every release up to
+  1.2.0 therefore shipped `.po` only and the translations never reached an
+  installation. Nothing produces a `.mo` on a dev machine, so the rule bought no
+  quiet in `git status` — only a broken package.
 
 ## Packaging
 

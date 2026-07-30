@@ -43,6 +43,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the plugin would declare documentation the core has no way to serve.
 
 ### Fixed
+- The release bundle ships the compiled gettext catalogues again — in practice,
+  for the first time. `.gitignore` hid `locale/**/*.mo` because the catalogues
+  are built in CI and never committed, but `compress-app-plugin.php` merges
+  `.gitignore` into its own exclude list, so the rule also stripped the files
+  `msgfmt` had just produced. Every release up to this one therefore shipped
+  `.po` sources only, and the Russian translations never reached an
+  installation. Nothing generates a `.mo` on a development machine, so the rule
+  was buying no quiet in `git status` — only a broken package. Dropped.
+
+## [1.1.1] - 2026-07-30
+
+### Fixed
 - `pm_create_task` no longer reads as if a milestone were mandatory (Task #320).
   `milestone_id`, `sprint_id` and `assignee_contact_id` are optional, but the
   schema declared `minimum: 1` on all three — the opposite of `pm_update_task`,
