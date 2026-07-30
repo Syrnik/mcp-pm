@@ -512,3 +512,27 @@ msgstr ""
 
 msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Returns the created task card."
 msgstr ""
+
+msgid "pm: conventions every tool shares"
+msgstr ""
+
+msgid "Start here: the ok/error envelope and its error codes, the two permission layers, the AUTH-32 task reference syntax, the \"0 clears a reference\" rule and a safe working order."
+msgstr ""
+
+msgid "pm: tasks, statuses and relations"
+msgstr ""
+
+msgid "Finding, creating and changing tasks: list filters and their -1 sentinels, why status and assignee have their own tools, comments, checklist, watchers, task relations and deletion."
+msgstr ""
+
+msgid "pm: projects, members, workflows and sprints"
+msgstr ""
+
+msgid "The container around tasks: what is writable and what is backend-only, statuses and workflow transitions, project roles and ownership, sprints and the backlog."
+msgstr ""
+
+msgid "pm: the project wiki"
+msgstr ""
+
+msgid "Sections versus articles, the two access gates and the per-page visibility table, publication flags and access roles, moving pages, and when to use the wiki instead of a task."
+msgstr ""

@@ -8,7 +8,8 @@ return array(
     'img'         => 'img/icon.svg',
 
     'handlers' => array(
-        'mcp_tool_registry_v1' => 'registerTools',
-        'mcp_plugin_rights_v1' => 'registerRights',
+        'mcp_tool_registry_v1'  => 'registerTools',
+        'mcp_plugin_rights_v1'  => 'registerRights',
+        'mcp_skill_registry_v1' => 'registerSkills',
     ),
 );

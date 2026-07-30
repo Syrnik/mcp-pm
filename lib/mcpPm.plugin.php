@@ -85,6 +85,80 @@ class mcpPmPlugin extends mcpPlugin
     }
 
     /**
+     * Publish the plugin's agent-facing documentation (mcp_skill_registry_v1).
+     *
+     * The tool schemas say what each argument is; they cannot say that a status
+     * change goes through pm_move_task rather than pm_update_task, that a
+     * relation between two tasks is one row read from both ends, or that a wiki
+     * page created without `published` is a draft nobody else sees. Those are
+     * the pitfalls an agent otherwise discovers by getting them wrong, so they
+     * live in skills/*.md and are served through resources/list + resources/read
+     * (skill://pm/<id>) and GET /mcp/skill/pm/<id>.md.
+     *
+     * The split follows the plugin's own right groups, so an agent granted only
+     * pm.read has no reason to fetch the wiki page.
+     *
+     * Requires the mcp app >= 1.2.0 (see lib/config/requirements.php), which is
+     * where mcpSkillRegistry and this event were introduced.
+     *
+     * Path separator
+     * --------------
+     * The paths below are built with DIRECTORY_SEPARATOR rather than the
+     * forward slash mcpPlugin's docblock shows. mcpSkillRegistry gates the
+     * declared path with
+     *
+     *     strncmp($rel, 'skills' . DIRECTORY_SEPARATOR, 7) !== 0
+     *
+     * so on Windows a literal "skills/foo.md" fails the check and the skill is
+     * dropped from the registry without a log line — resources/list simply
+     * comes back empty. On POSIX DIRECTORY_SEPARATOR is "/", so this spelling
+     * is byte-identical to the documented one; on Windows it is the only one
+     * that survives. We do not control the mcp app, so the plugin matches the
+     * core's check instead of the core's docblock. Revisit if mcp normalises
+     * the separator itself.
+     *
+     * @param array $groups  Passed by reference; add a 'pm' entry.
+     */
+    public function registerSkills(&$groups)
+    {
+        $dir = 'skills' . DIRECTORY_SEPARATOR;
+
+        $groups['pm'] = array(
+            'name'   => _wp('Project Management'),
+            'skills' => array(
+                array(
+                    'id'          => 'pm-basics',
+                    'name'        => _wp('pm: conventions every tool shares'),
+                    'description' => _wp('Start here: the ok/error envelope and its error codes, the two permission layers, the AUTH-32 task reference syntax, the "0 clears a reference" rule and a safe working order.'),
+                    'path'        => $dir . 'pm-basics.md',
+                    'mime'        => 'text/markdown',
+                ),
+                array(
+                    'id'          => 'pm-tasks',
+                    'name'        => _wp('pm: tasks, statuses and relations'),
+                    'description' => _wp('Finding, creating and changing tasks: list filters and their -1 sentinels, why status and assignee have their own tools, comments, checklist, watchers, task relations and deletion.'),
+                    'path'        => $dir . 'pm-tasks.md',
+                    'mime'        => 'text/markdown',
+                ),
+                array(
+                    'id'          => 'pm-projects',
+                    'name'        => _wp('pm: projects, members, workflows and sprints'),
+                    'description' => _wp('The container around tasks: what is writable and what is backend-only, statuses and workflow transitions, project roles and ownership, sprints and the backlog.'),
+                    'path'        => $dir . 'pm-projects.md',
+                    'mime'        => 'text/markdown',
+                ),
+                array(
+                    'id'          => 'pm-wiki',
+                    'name'        => _wp('pm: the project wiki'),
+                    'description' => _wp('Sections versus articles, the two access gates and the per-page visibility table, publication flags and access roles, moving pages, and when to use the wiki instead of a task.'),
+                    'path'        => $dir . 'pm-wiki.md',
+                    'mime'        => 'text/markdown',
+                ),
+            ),
+        );
+    }
+
+    /**
      * Declare the rights that gate each tool. The right name equals the tool
      * name (helpdesk convention): a token scope lists tool names directly.
      *
