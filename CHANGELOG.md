@@ -7,7 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.1] - 2026-07-30
+## [1.2.0] - 2026-07-30
+
+### Added
+- The plugin now publishes **skills** — agent-facing markdown documentation
+  served through the MCP app's skill registry (Task PMCP-234). Until now an
+  agent had only the tool schemas to go on, and the schemas cannot say that a
+  status change goes through `pm_move_task` rather than `pm_update_task`, that
+  a relation between two tasks is one row read from both ends, that a
+  milestone from another project comes back with the project's own options
+  attached, or that a wiki page created without `published` is a draft nobody
+  else sees. Four documents, split along the plugin's right groups so a
+  read-only token has no reason to fetch the wiki page: `pm-basics` (the
+  `ok`/error envelope and its codes, the two permission layers, the `AUTH-32`
+  reference syntax, the "`0` clears a reference" rule), `pm-tasks` (list
+  filters and their `-1` sentinels, creating and changing tasks, comments,
+  checklist, watchers, relations, deletion), `pm-projects` (what is writable
+  versus backend-only, statuses and workflow transitions, roles and ownership,
+  sprints and the backlog) and `pm-wiki` (sections versus articles, the two
+  access gates and per-page visibility, publication flags, moves). Clients
+  reach them via MCP `resources/list` / `resources/read`
+  (`skill://pm/<skill_id>`), via `GET /mcp/skill/pm/<skill_id>.md`, or from the
+  mcp backend's Skills page.
+
+  The declared paths are built with `DIRECTORY_SEPARATOR` rather than the
+  forward slash `mcpPlugin`'s docblock shows: `mcpSkillRegistry` gates the path
+  against `'skills' . DIRECTORY_SEPARATOR` and drops a non-matching one without
+  an exception or a log line, so on Windows the documented spelling yields an
+  empty `resources/list`. The two forms are identical on POSIX. A test runs the
+  registry's own resolver so the discrepancy cannot come back unnoticed.
+
+### Changed
+- Requires the mcp app **1.2.0** or newer, up from 1.0.1. The skill registry
+  the plugin now registers with was introduced in that release; on an older mcp
+  the plugin would declare documentation the core has no way to serve.
 
 ### Fixed
 - `pm_create_task` no longer reads as if a milestone were mandatory (Task #320).

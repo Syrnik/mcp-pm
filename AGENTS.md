@@ -79,6 +79,10 @@ php /path/to/phpunit
   a matching right (right name == tool name), schemas are well-formed.
 - `tests/pmMcpSchemaTest.php` — DB-independent unit tests: argument coercers,
   schema validation, wiki access-role and page-visibility logic.
+- `tests/pmMcpSkillsTest.php` — DB-independent: the `mcp_skill_registry_v1`
+  handler is wired in `plugin.php`, every declared skill resolves to a real file
+  under `skills/`, no `skills/*.md` is left unregistered, and the `app.mcp`
+  requirement stays at the version that ships the registry.
 - `tests/pmMcpIntegrationTestCase.php` — abstract base for the integration
   tests (does not end in `*Test.php`, so it is required from the bootstrap, not
   auto-discovered). Runs as contact 1, creates a throwaway project in `setUp`
@@ -111,6 +115,32 @@ php wa-apps/mcp/plugins/pm/tests/seed.php
   hard-coding ids.
 - `tests/` is excluded from the release bundle (see below), so fixtures never
   ship.
+
+## Skills
+
+`skills/*.md` is the plugin's agent-facing documentation, published through the
+mcp app's skill registry. Declare every file in `registerSkills()`
+(`lib/mcpPm.plugin.php`); the registry refuses anything outside `skills/` or
+containing `..`. Skill ids are kebab-case and appear in the public URI
+(`skill://pm/<id>`), so treat them as stable API: rename only with a reason.
+
+**Build the path with `DIRECTORY_SEPARATOR`**, not the forward slash
+`mcpPlugin`'s docblock shows. `mcpSkillRegistry::resolvePluginRelative()` gates
+the declared path with `strncmp($rel, 'skills' . DIRECTORY_SEPARATOR, 7)`, so on
+Windows a literal `'skills/foo.md'` fails the check and the skill is dropped
+**silently** — no exception, no log line, just an empty `resources/list`. On
+POSIX the two spellings are identical, so the mismatch does not show up in
+production and only bites on a Windows dev box. We do not control the mcp app,
+so the plugin matches the core's check rather than its docblock;
+`testEverySkillSurvivesTheRegistryPathCheck` runs the core's own resolver to
+catch a regression on whichever platform the suite runs.
+
+Write for an agent that has the tool schemas already — document the behaviour
+the schema cannot express (permission gates, sentinel values, which tool owns
+which field, what a soft failure means), not the argument list. The `name` and
+`description` passed to `registerSkills()` go through `_wp()`; the markdown
+itself is not localized. `skills/` ships in the release bundle — do not add it
+to `lib/config/exclude.php`.
 
 ## Localization
 
