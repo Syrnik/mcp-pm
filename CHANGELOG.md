@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-02
+
 ### Added
 - **Tags can be written, not just read** (Task PMCP-366). Until now the pm
   domain could list a project's tags, show them on a task card and filter by
@@ -40,6 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   matching where the pm interface puts its own gate, and every change is
   written to the task history in the same shape the interface writes, so the
   activity log reads identically whoever made the change.
+
+### Fixed
+- The store description's per-group tool counts were the wrong way round —
+  "read 9 / tasks 12" against right groups that actually split 12 / 9. The
+  page sells a token's scope as something you can read straight off the tool
+  list, so the figures had to match it. Store copy only; the shipped plugin
+  was never affected.
 
 ## [1.2.0] - 2026-07-30
 
