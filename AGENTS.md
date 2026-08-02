@@ -89,6 +89,12 @@ php /path/to/phpunit
   and tears everything down in `tearDown`.
 - `tests/pmMcp{Project,Task,Wiki,Sprint}ToolsTest.php` — integration tests that
   drive the tools against the live DB.
+- `tests/pmMcpTagToolsTest.php` — integration tests for task tagging: the
+  `tags` field of `pm_create_task` / `pm_update_task` and the
+  `pm_add_tags` / `pm_remove_tags` pair — replace versus add semantics,
+  case-insensitive matching, the refusal of an unknown name and what
+  `create_missing_tags` changes, and that nothing is written when a name is
+  rejected.
 - `tests/pmMcpDependencyToolTest.php` — integration tests for
   `pm_manage_dependencies`: one stored row per relation, both cards reading it,
   idempotent repeats, refused conflicts, removal from either end.
