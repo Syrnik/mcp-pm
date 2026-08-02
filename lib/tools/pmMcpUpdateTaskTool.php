@@ -8,12 +8,17 @@
  *
  * Nullable references (assignee_contact_id, milestone_id, sprint_id, parent_id)
  * accept 0 to clear the field (unassign / backlog / no milestone / detach).
+ *
+ * `tags` is the odd one out: pmTask::save() knows nothing about tags, so they
+ * are written separately, gated on task.edit and replacing the whole set — an
+ * empty array clears it. pm_add_tags / pm_remove_tags change one tag without
+ * touching the others.
  */
 class pmMcpUpdateTaskTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_update_task'; }
     public function getRight()       { return 'pm_update_task'; }
-    public function getDescription() { return _wp('Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields). Pass 0 for assignee/milestone/sprint/parent to clear them. Use pm_move_task to change status. Returns the updated task card.'); }
+    public function getDescription() { return _wp('Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields, tags). Pass 0 for assignee/milestone/sprint/parent to clear them; the tags field replaces the whole tag set, an empty array clears it. Use pm_move_task to change status. Returns the updated task card.'); }
 
     public function getInputSchema()
     {
@@ -36,6 +41,16 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
                 'estimated_hours'     => array('type' => 'number', 'minimum' => 0, 'description' => 'Estimated hours.'),
                 'progress'            => array('type' => 'integer', 'minimum' => 0, 'maximum' => 100, 'description' => 'Progress percent (0-100).'),
                 'custom_fields'       => array('type' => 'object', 'description' => 'Map of custom field id => value.'),
+                'tags'                => array(
+                    'type'        => 'array',
+                    'items'       => array('type' => 'string', 'minLength' => 1, 'maxLength' => pmMcpTagHelper::NAME_MAX_LENGTH),
+                    'description' => 'Replaces the task\'s whole tag set with these names: tags not listed are detached, an empty array clears every tag. To add or drop individual tags without touching the rest, use pm_add_tags / pm_remove_tags. Requires task.edit.',
+                ),
+                'create_missing_tags' => array(
+                    'type'        => 'boolean',
+                    'default'     => false,
+                    'description' => 'Create tags the project does not have yet. Default false: an unknown name is refused with the project\'s available_tags instead, so a typo does not become a new tag.',
+                ),
             ),
         );
     }
@@ -79,7 +94,10 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
                 $data['_custom_fields'] = $arguments['custom_fields'];
             }
 
-            if (!$data) {
+            // Tags live outside pmTask::save() — they are their own table and
+            // their own permission check. An update may carry nothing but tags.
+            $has_tags = array_key_exists('tags', $arguments);
+            if (!$data && !$has_tags) {
                 return $this->softFail('invalid_param', _wp('No fields to update.'));
             }
 
@@ -91,7 +109,36 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
                 return $this->softFail('invalid_param', $ref_problem['message'], $ref_problem['extra']);
             }
 
-            $entity->save($data, $this->getUserId());
+            // Resolve the tag names before saving the other fields: an unknown
+            // name then costs the caller nothing, instead of leaving the field
+            // changes applied and the tags not.
+            $tag_names = array();
+            $create_missing_tags = $this->argBool($arguments, 'create_missing_tags');
+            if ($has_tags) {
+                if (!$entity->canEdit($this->getUserId())) {
+                    return $this->softFail('access_denied', _wp('You do not have permission to edit this task\'s tags.'));
+                }
+                $tag_names = pmMcpTagHelper::normalizeNames($arguments['tags']);
+                if ($tag_names && !$create_missing_tags) {
+                    $missing = pmMcpTagHelper::missingNames((int) $row['project_id'], $tag_names);
+                    if ($missing) {
+                        $failure = pmMcpTagHelper::missingTagsFailure((int) $row['project_id'], $missing);
+                        return $this->softFail('invalid_param', $failure['message'], $failure['extra']);
+                    }
+                }
+            }
+
+            if ($data) {
+                $entity->save($data, $this->getUserId());
+            }
+
+            if ($has_tags) {
+                // Replace, not merge: every other field of this tool overwrites
+                // what was there, and an empty array is the documented way to
+                // clear the set.
+                $tags = pmMcpTagHelper::resolveOrCreate((int) $row['project_id'], $tag_names, $create_missing_tags);
+                pmMcpTagHelper::applyToTask($row, $tags, 'replace', $this->getUserId());
+            }
 
             return $this->ok(array(
                 'task_id' => $task_id,

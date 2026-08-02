@@ -67,6 +67,10 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpManageDependenciesTool());
         $registry->addTool(new pmMcpDeleteTaskTool());
 
+        // ===== Stage 7 — Write: task tags (2 tools) =====
+        $registry->addTool(new pmMcpAddTagsTool());
+        $registry->addTool(new pmMcpRemoveTagsTool());
+
         // ===== Stage 4 — Write: projects (4 tools) =====
         $registry->addTool(new pmMcpCreateProjectTool());
         $registry->addTool(new pmMcpUpdateProjectTool());
@@ -325,6 +329,20 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Tasks'),
                     'title'       => _wp('Delete task'),
                     'description' => _wp('Permanently delete a task and its dependents (requires confirm).'),
+                ),
+                array(
+                    'name'        => 'pm_add_tags',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Add task tags'),
+                    'description' => _wp('Attach tags to a task by name, optionally creating the ones the project lacks (respects the task.edit permission).'),
+                ),
+                array(
+                    'name'        => 'pm_remove_tags',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Remove task tags'),
+                    'description' => _wp('Detach tags from a task by name, leaving the tags themselves in the project (respects the task.edit permission).'),
                 ),
 
                 // ===== Projects group — write (4 rights) =====
