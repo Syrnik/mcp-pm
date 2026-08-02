@@ -9,7 +9,7 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_create_task'; }
     public function getRight()       { return 'pm_create_task'; }
-    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Returns the created task card.'); }
+    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field. Returns the created task card.'); }
 
     public function getInputSchema()
     {
@@ -34,6 +34,16 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                 'estimated_hours'     => array('type' => 'number', 'minimum' => 0, 'description' => 'Estimated hours.'),
                 'progress'            => array('type' => 'integer', 'minimum' => 0, 'maximum' => 100, 'description' => 'Progress percent (0-100).'),
                 'custom_fields'       => array('type' => 'object', 'description' => 'Map of custom field id => value.'),
+                'tags'                => array(
+                    'type'        => 'array',
+                    'items'       => array('type' => 'string', 'minLength' => 1, 'maxLength' => pmMcpTagHelper::NAME_MAX_LENGTH),
+                    'description' => 'Tag names to put on the new task. Matching against the project\'s tags is case-insensitive; a name the project does not have is refused unless create_missing_tags is true.',
+                ),
+                'create_missing_tags' => array(
+                    'type'        => 'boolean',
+                    'default'     => false,
+                    'description' => 'Create tags the project does not have yet. Default false: an unknown name is refused with the project\'s available_tags instead, so a typo does not become a new tag.',
+                ),
             ),
         );
     }
@@ -107,7 +117,35 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                 return $this->softFail('invalid_param', $ref_problem['message'], $ref_problem['extra']);
             }
 
+            // Tags are not part of pmTask::create()'s data — they are linked
+            // afterwards. Resolve the names before creating anything, so a
+            // rejected tag does not leave a task behind that the caller did not
+            // get told about, and so no tag is created for a task that then
+            // fails validation.
+            $tag_names = array();
+            $create_missing_tags = $this->argBool($arguments, 'create_missing_tags');
+            if (array_key_exists('tags', $arguments)) {
+                $tag_names = pmMcpTagHelper::normalizeNames($arguments['tags']);
+                if ($tag_names && !$create_missing_tags) {
+                    $missing = pmMcpTagHelper::missingNames($project_id, $tag_names);
+                    if ($missing) {
+                        $failure = pmMcpTagHelper::missingTagsFailure($project_id, $missing);
+                        return $this->softFail('invalid_param', $failure['message'], $failure['extra']);
+                    }
+                }
+            }
+
             $task_id = pmTask::create($data, $this->getUserId());
+
+            if ($tag_names) {
+                $tags = pmMcpTagHelper::resolveOrCreate($project_id, $tag_names, $create_missing_tags);
+                pmMcpTagHelper::applyToTask(
+                    array('id' => $task_id, 'project_id' => $project_id),
+                    $tags,
+                    'add',
+                    $this->getUserId()
+                );
+            }
 
             return $this->ok(array(
                 'task_id' => (int) $task_id,

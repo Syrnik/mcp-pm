@@ -536,3 +536,57 @@ msgstr "pm: вики проекта"
 
 msgid "Sections versus articles, the two access gates and the per-page visibility table, publication flags and access roles, moving pages, and when to use the wiki instead of a task."
 msgstr "Разделы и статьи, два уровня доступа и таблица видимости страниц, флаги публикации и роли доступа, перемещение страниц, и когда писать в вики, а когда в задачу."
+
+msgid "tags must be an array of tag names."
+msgstr "tags должен быть массивом названий тегов."
+
+msgid "tags must be an array of tag names (strings)."
+msgstr "tags должен быть массивом названий тегов (строк)."
+
+msgid "Tag name \"%s\" is longer than %d characters."
+msgstr "Название тега «%s» длиннее %d символов."
+
+msgid "Project %d has no tag \"%s\"."
+msgstr "В проекте %d нет тега «%s»."
+
+msgid "Project %d has no tag %s; see available_tags."
+msgstr "В проекте %d нет тега %s; см. available_tags."
+
+msgid "Project %d has no tag %s — it has no tags at all yet."
+msgstr "В проекте %d нет тега %s — в нём пока вообще нет тегов."
+
+msgid "Pass %s=true to create it, or use an existing name."
+msgstr "Передайте %s=true, чтобы создать его, либо укажите существующее название."
+
+msgid "Add task tags"
+msgstr "Добавление тегов задачи"
+
+msgid "Attach tags to a task by name, optionally creating the ones the project lacks (respects the task.edit permission)."
+msgstr "Добавляет задаче теги по названию, при необходимости создавая отсутствующие в проекте (с учётом права task.edit)."
+
+msgid "Remove task tags"
+msgstr "Снятие тегов задачи"
+
+msgid "Detach tags from a task by name, leaving the tags themselves in the project (respects the task.edit permission)."
+msgstr "Снимает с задачи теги по названию, сами теги остаются в проекте (с учётом права task.edit)."
+
+msgid "Attach tags to a task by name, keeping the tags it already has. Requires the task.edit permission. A name the project does not have is refused with the available tags listed, unless create_missing_tags is true. Returns the task's tags after the change."
+msgstr "Добавляет задаче теги по названию, сохраняя уже проставленные. Требует права task.edit. Название, которого нет в проекте, отклоняется со списком доступных тегов — если только не передан create_missing_tags. Возвращает теги задачи после изменения."
+
+msgid "You do not have permission to edit this task's tags."
+msgstr "У вас нет прав на редактирование тегов этой задачи."
+
+msgid "tags must name at least one tag. Use pm_remove_tags to detach tags."
+msgstr "В tags нужно указать хотя бы один тег. Для снятия тегов используйте pm_remove_tags."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field. Returns the created task card."
+msgstr "Создать задачу в проекте. Требуется участие в проекте с правом task.create. workflow_id обязателен, если у проекта больше одного workflow; исполнитель, веха и спринт необязательны — не передавайте их (или передайте 0), чтобы оставить пустыми. Теги можно проставить в этом же вызове полем tags. Возвращает карточку созданной задачи."
+
+msgid "Detach tags from a task by name, keeping its other tags. The tag stays in the project. Requires the task.edit permission. Names the task does not carry are reported in not_on_task rather than failing. Returns the task's tags after the change."
+msgstr "Снимает с задачи теги по названию, остальные её теги сохраняются. Сам тег остаётся в проекте. Требует права task.edit. Названия, которых на задаче нет, попадают в not_on_task, а не в ошибку. Возвращает теги задачи после изменения."
+
+msgid "tags must name at least one tag."
+msgstr "В tags нужно указать хотя бы один тег."
+
+msgid "Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields, tags). Pass 0 for assignee/milestone/sprint/parent to clear them; the tags field replaces the whole tag set, an empty array clears it. Use pm_move_task to change status. Returns the updated task card."
+msgstr "Обновляет поля задачи (тема, описание, приоритет, тип, исполнитель, даты, веха, спринт, родитель, оценка, прогресс, кастомные поля, теги). Передайте 0 для assignee/milestone/sprint/parent, чтобы очистить; поле tags заменяет весь набор тегов, пустой массив снимает все. Для смены статуса используйте pm_move_task. Возвращает обновлённую карточку задачи."

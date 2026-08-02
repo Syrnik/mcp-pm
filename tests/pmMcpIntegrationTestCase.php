@@ -66,13 +66,16 @@ abstract class pmMcpIntegrationTestCase extends TestCase
         }
         $task_model = new pmTaskModel();
         $dependency_model = new pmTaskDependencyModel();
+        $task_tag_model = new pmTaskTagModel();
         foreach ($task_model->getByField('project_id', $pid, true) as $t) {
-            // Relations live in their own table and survive a raw task delete,
-            // so clear both ends before the task goes.
+            // Relations and tag links live in their own tables and survive a raw
+            // task delete, so clear them before the task goes.
             $dependency_model->deleteByField('task_id', $t['id']);
             $dependency_model->deleteByField('depends_on_task_id', $t['id']);
+            $task_tag_model->deleteByTask($t['id']);
             $task_model->deleteById($t['id']);
         }
+        (new pmTagModel())->deleteByField('project_id', $pid);
         (new pmWikiPageModel())->deleteByField('project_id', $pid);
         foreach ((new pmSprintModel())->getByProject($pid) as $s) {
             (new pmSprintProjectModel())->deleteByField('sprint_id', $s['id']);

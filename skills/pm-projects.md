@@ -13,10 +13,12 @@ milestones/sprints/tags.
 | Workflows / statuses | `pm_get_workflow`, `pm_list_statuses` | — configured in the pm backend only |
 | Milestones | `pm_list_milestones` | — backend only |
 | Sprints | `pm_list_sprints`, `pm_get_sprint` | — backend only; tasks move between sprints via `pm_update_task` |
-| Tags | `pm_list_tags` | — backend only; tags are attached to tasks in the pm UI |
+| Tags | `pm_list_tags` | `pm_add_tags`, `pm_remove_tags`, the `tags` field of `pm_create_task` / `pm_update_task` — see [`pm-tasks`](skill://pm/pm-tasks) |
 
-When a human asks for a new milestone, sprint or tag, say it has to be created
-in the Project Management app — do not improvise it as a task or a wiki page.
+When a human asks for a new milestone or sprint, say it has to be created in
+the Project Management app — do not improvise it as a task or a wiki page.
+Tags are the exception: a tag the project lacks can be created along the way,
+but only when the call says so explicitly (`create_missing_tags`).
 
 ## Reading a project
 
@@ -111,8 +113,14 @@ move a task to the backlog, `pm_update_task` with `sprint_id: 0`.
 ## Milestones and tags
 
 `pm_list_milestones` returns the project's milestones with their status and
-dates; `pm_list_tags` its tags with ids and colours. Both are the only place to
-get the ids that `pm_create_task` / `pm_update_task` / `pm_list_tasks` accept —
-and a milestone or tag from *another* project is always refused.
+dates; `pm_list_tags` its tags with ids and colours. A milestone or tag from
+*another* project is always refused: both are project-scoped, and two projects
+that both have a "bug" tag have two unrelated tags.
+
+A milestone is referenced by **id**, so `pm_list_milestones` is the only place
+to get one. Tags are the opposite — every tool that writes them takes **names**
+(see [`pm-tasks`](skill://pm/pm-tasks)), so `pm_list_tags` is worth a call only
+to see what a project already uses, or to turn a name into the `tag_id` that
+`pm_list_tasks` filters on.
 
 Related: [`pm-tasks`](skill://pm/pm-tasks) · [`pm-wiki`](skill://pm/pm-wiki)

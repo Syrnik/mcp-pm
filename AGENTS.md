@@ -89,6 +89,12 @@ php /path/to/phpunit
   and tears everything down in `tearDown`.
 - `tests/pmMcp{Project,Task,Wiki,Sprint}ToolsTest.php` — integration tests that
   drive the tools against the live DB.
+- `tests/pmMcpTagToolsTest.php` — integration tests for task tagging: the
+  `tags` field of `pm_create_task` / `pm_update_task` and the
+  `pm_add_tags` / `pm_remove_tags` pair — replace versus add semantics,
+  case-insensitive matching, the refusal of an unknown name and what
+  `create_missing_tags` changes, and that nothing is written when a name is
+  rejected.
 - `tests/pmMcpDependencyToolTest.php` — integration tests for
   `pm_manage_dependencies`: one stored row per relation, both cards reading it,
   idempotent repeats, refused conflicts, removal from either end.
@@ -127,10 +133,11 @@ containing `..`. Skill ids are kebab-case and appear in the public URI
 **Build the path with `DIRECTORY_SEPARATOR`**, not the forward slash
 `mcpPlugin`'s docblock shows. `mcpSkillRegistry::resolvePluginRelative()` gates
 the declared path with `strncmp($rel, 'skills' . DIRECTORY_SEPARATOR, 7)`, so on
-Windows a literal `'skills/foo.md'` fails the check and the skill is dropped
-**silently** — no exception, no log line, just an empty `resources/list`. On
-POSIX the two spellings are identical, so the mismatch does not show up in
-production and only bites on a Windows dev box. We do not control the mcp app,
+Windows a literal `'skills/foo.md'` fails the check and the skill is dropped: no
+exception, just an empty `resources/list`. It does land in `wa-log/mcp.log`, but
+as `rejected unsafe path`, which reads like a traversal attempt rather than a
+separator mismatch. On POSIX the two spellings are identical, so this only bites
+on a Windows dev box. We do not control the mcp app,
 so the plugin matches the core's check rather than its docblock;
 `testEverySkillSurvivesTheRegistryPathCheck` runs the core's own resolver to
 catch a regression on whichever platform the suite runs.

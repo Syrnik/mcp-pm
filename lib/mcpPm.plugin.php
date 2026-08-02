@@ -67,6 +67,10 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpManageDependenciesTool());
         $registry->addTool(new pmMcpDeleteTaskTool());
 
+        // ===== Stage 7 — Write: task tags (2 tools) =====
+        $registry->addTool(new pmMcpAddTagsTool());
+        $registry->addTool(new pmMcpRemoveTagsTool());
+
         // ===== Stage 4 — Write: projects (4 tools) =====
         $registry->addTool(new pmMcpCreateProjectTool());
         $registry->addTool(new pmMcpUpdateProjectTool());
@@ -110,12 +114,14 @@ class mcpPmPlugin extends mcpPlugin
      *     strncmp($rel, 'skills' . DIRECTORY_SEPARATOR, 7) !== 0
      *
      * so on Windows a literal "skills/foo.md" fails the check and the skill is
-     * dropped from the registry without a log line — resources/list simply
-     * comes back empty. On POSIX DIRECTORY_SEPARATOR is "/", so this spelling
-     * is byte-identical to the documented one; on Windows it is the only one
-     * that survives. We do not control the mcp app, so the plugin matches the
-     * core's check instead of the core's docblock. Revisit if mcp normalises
-     * the separator itself.
+     * dropped from the registry: no exception, resources/list simply comes back
+     * empty. It is logged to wa-log/mcp.log, but as "rejected unsafe path",
+     * which sends whoever reads it looking for a traversal attempt rather than
+     * a separator mismatch. On POSIX DIRECTORY_SEPARATOR is "/", so this
+     * spelling is byte-identical to the documented one; on Windows it is the
+     * only one that survives. We do not control the mcp app, so the plugin
+     * matches the core's check instead of the core's docblock. Revisit if mcp
+     * normalises the separator itself.
      *
      * @param array $groups  Passed by reference; add a 'pm' entry.
      */
@@ -323,6 +329,20 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Tasks'),
                     'title'       => _wp('Delete task'),
                     'description' => _wp('Permanently delete a task and its dependents (requires confirm).'),
+                ),
+                array(
+                    'name'        => 'pm_add_tags',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Add task tags'),
+                    'description' => _wp('Attach tags to a task by name, optionally creating the ones the project lacks (respects the task.edit permission).'),
+                ),
+                array(
+                    'name'        => 'pm_remove_tags',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Remove task tags'),
+                    'description' => _wp('Detach tags from a task by name, leaving the tags themselves in the project (respects the task.edit permission).'),
                 ),
 
                 // ===== Projects group — write (4 rights) =====

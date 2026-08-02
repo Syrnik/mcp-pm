@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-02
+
+### Added
+- **Tags can be written, not just read** (Task PMCP-366). Until now the pm
+  domain could list a project's tags, show them on a task card and filter by
+  them — but nothing could put one on a task, so an agent had to hand the job
+  back to a human and ask them to open the interface. Four ways in, each with
+  its own semantics: `tags` on `pm_create_task` (the new task starts with
+  exactly these), the new `pm_add_tags` and `pm_remove_tags` (change one tag,
+  leave the rest alone), and `tags` on `pm_update_task`, which replaces the
+  whole set the way every other field of that tool replaces its value — an
+  empty array clears it.
+
+  All four take tag **names**, not ids: an agent knows the word it wants and
+  almost never the number behind it. Matching is case-insensitive and happens
+  against the project's tag list rather than through an SQL lookup, so it does
+  not depend on the column's collation and resolves the same way on every
+  install. Tags are project-scoped, so a name is only ever looked for in the
+  task's own project.
+
+  A name the project does not have is **refused** by default, with
+  `missing_tags` and the project's own `available_tags` attached — a typo costs
+  one corrected call, not a stray tag nobody notices. Passing
+  `create_missing_tags: true` creates it instead; that is the deliberate switch
+  for the case the strict default cannot serve, a project whose tag list is
+  still empty. The names are resolved *before* anything is written, so a
+  rejected tag leaves neither a half-made task nor a subject renamed by the
+  same call. `pm_remove_tags` is deliberately lenient in the other direction: a
+  tag the task does not carry is reported in `not_on_task` rather than raised,
+  and the tag itself stays in the project — this unlinks, it does not delete.
+
+  Writes are gated on `task.edit` (`task.create` for tags passed at creation),
+  matching where the pm interface puts its own gate, and every change is
+  written to the task history in the same shape the interface writes, so the
+  activity log reads identically whoever made the change.
+
+### Fixed
+- The store description's per-group tool counts were the wrong way round —
+  "read 9 / tasks 12" against right groups that actually split 12 / 9. The
+  page sells a token's scope as something you can read straight off the tool
+  list, so the figures had to match it. Store copy only; the shipped plugin
+  was never affected.
+
 ## [1.2.0] - 2026-07-30
 
 ### Added
@@ -33,8 +76,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The declared paths are built with `DIRECTORY_SEPARATOR` rather than the
   forward slash `mcpPlugin`'s docblock shows: `mcpSkillRegistry` gates the path
   against `'skills' . DIRECTORY_SEPARATOR` and drops a non-matching one without
-  an exception or a log line, so on Windows the documented spelling yields an
-  empty `resources/list`. The two forms are identical on POSIX. A test runs the
+  raising anything, so on Windows the documented spelling yields an empty
+  `resources/list`; the rejection is logged to `wa-log/mcp.log` as
+  `rejected unsafe path`, which reads like a traversal attempt rather than a
+  separator mismatch. The two forms are identical on POSIX. A test runs the
   registry's own resolver so the discrepancy cannot come back unnoticed.
 
 ### Changed
