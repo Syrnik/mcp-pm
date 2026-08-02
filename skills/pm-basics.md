@@ -57,6 +57,11 @@ pm_list_statuses            → status ids (+ a workflow's transition matrix)
 pm_list_tags / pm_list_milestones / pm_list_sprints
 ```
 
+The one exception is **tags on a task**: those are written by name, not by id
+(see [`pm-tasks`](skill://pm/pm-tasks)). `pm_list_tags` is still how you learn
+what a project uses, and how you get the `tag_id` that `pm_list_tasks` filters
+on.
+
 `pm_get_project` is the cheapest way to warm up: it returns the project card,
 its participants with roles, every attached workflow with its statuses and
 transitions, and the milestones — enough to create or move a task without
@@ -111,7 +116,8 @@ custom fields, and cannot be undone.
   (`md` by default — see `content_format` on the project card and on
   `pm_list_wiki_pages`). Write **Markdown** unless the project says otherwise;
   the app renders it, so do not pre-render HTML.
-- `pm_create_project` / `pm_update_project` strip tags from the project name.
+- `pm_create_project` / `pm_update_project` strip HTML tags from the project
+  name (nothing to do with task tags).
 
 ## A safe working order
 

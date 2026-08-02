@@ -69,6 +69,9 @@ Only `project_id` and `subject` are required. The traps:
   `pm_add_project_user` first.
 - `status_id` defaults to the workflow's first status; there is rarely a reason
   to set it explicitly at creation.
+- `tags` takes **names**, not ids — see below. A name the project does not have
+  is refused before the task is created, so a rejected tag never leaves a
+  half-made task behind.
 - Requires the `task.create` permission on the project.
 
 ## Changing a task
@@ -77,9 +80,10 @@ Three separate tools, deliberately:
 
 | Change | Tool | Why not `pm_update_task` |
 |--------|------|--------------------------|
-| Subject, description, priority, type, dates, estimate, progress, milestone, sprint, parent, custom fields | `pm_update_task` | — |
+| Subject, description, priority, type, dates, estimate, progress, milestone, sprint, parent, custom fields, tags | `pm_update_task` | — |
 | **Status** | `pm_move_task` | Status changes run through the workflow's transition rules and the `task.change_status` permission, and maintain `completed_datetime`. `pm_update_task` will not do it |
 | **Assignee** | `pm_assign_task` | Enforces `task.assign` and the "must be a participant" rule; `assignee_contact_id: 0` unassigns |
+| **One tag, others untouched** | `pm_add_tags` / `pm_remove_tags` | `pm_update_task`'s `tags` replaces the whole set — see below |
 
 `pm_update_task` is partial — send only the keys you are changing. It enforces
 per-field permissions (`task.edit`, `task.assign`, `task.set_dates`), so a
@@ -87,6 +91,48 @@ partial denial is possible: check the returned card.
 
 `pm_move_task` takes a **global** `status_id`, which must be in the task's
 current `allowed_statuses`.
+
+## Tags
+
+Tags are **project-scoped**: a project's "bug" and another project's "bug" are
+two unrelated tags, and a tag never crosses over. Every tool that writes them
+takes **names**, not ids, and matches case-insensitively — `"URGENT"` finds
+`urgent`. The response echoes the name as pm stores it, which is the spelling
+to use from then on.
+
+Four ways in, deliberately different:
+
+| Call | Effect on the existing tags |
+|------|-----------------------------|
+| `pm_create_task` with `tags` | The new task starts with exactly these |
+| `pm_add_tags` | Adds; everything already on the task stays |
+| `pm_remove_tags` | Detaches only the named ones |
+| `pm_update_task` with `tags` | **Replaces the whole set** — anything not listed is detached, `[]` clears every tag |
+
+```json
+{"task_id": "PMCP-365", "tags": ["Webasyst Framework"], "create_missing_tags": true}
+```
+
+**An unknown name is refused, not invented.** By default a name the project
+does not have comes back as `invalid_param` with `missing_tags` (what you sent)
+and `available_tags` (what the project actually has, so a typo is one
+correction away, not one round trip). Pass **`create_missing_tags: true`** to
+create it instead — the deliberate choice, because a project with no tags yet
+(`available_tags: []`) is exactly the case where creating one is right, and a
+misspelling is exactly the case where it is not. The check runs before anything
+is written: a rejected tag leaves neither a new task, nor a renamed subject,
+nor half the batch attached.
+
+`pm_remove_tags` is the lenient one: a name the task does not carry — including
+one the project never had — is not an error. It comes back in `not_on_task`,
+and the tag itself survives in the project; this unlinks, it does not delete.
+
+Permissions follow the pm UI: tags on an existing task need **`task.edit`**,
+tags passed to `pm_create_task` ride along with `task.create`. Every change is
+written to the task history exactly as the interface writes it.
+
+To *find* tasks by tag, `pm_list_tasks` still takes a numeric `tag_id` —
+`pm_list_tags` turns a name into one.
 
 ## Comments, checklist, watchers
 
@@ -159,6 +205,8 @@ the task to a closed status when the intent is merely "this is done/dropped".
   something else entirely (`pm_list_sprints`).
 - `status_id` values are global across the install; a workflow only decides
   which of them it uses and how they connect.
+- `tags` in `pm_update_task` replaces the set. Reaching for it to add one tag
+  silently drops the others — `pm_add_tags` is the tool for that.
 - After a write, the tool returns the updated card — do not re-fetch it.
 - A `not_found` on a task you can see in the UI usually means the token's
   `act_as` contact is not a member of that project.
