@@ -536,3 +536,57 @@ msgstr ""
 
 msgid "Sections versus articles, the two access gates and the per-page visibility table, publication flags and access roles, moving pages, and when to use the wiki instead of a task."
 msgstr ""
+
+msgid "tags must be an array of tag names."
+msgstr ""
+
+msgid "tags must be an array of tag names (strings)."
+msgstr ""
+
+msgid "Tag name \"%s\" is longer than %d characters."
+msgstr ""
+
+msgid "Project %d has no tag \"%s\"."
+msgstr ""
+
+msgid "Project %d has no tag %s; see available_tags."
+msgstr ""
+
+msgid "Project %d has no tag %s — it has no tags at all yet."
+msgstr ""
+
+msgid "Pass %s=true to create it, or use an existing name."
+msgstr ""
+
+msgid "Add task tags"
+msgstr ""
+
+msgid "Attach tags to a task by name, optionally creating the ones the project lacks (respects the task.edit permission)."
+msgstr ""
+
+msgid "Remove task tags"
+msgstr ""
+
+msgid "Detach tags from a task by name, leaving the tags themselves in the project (respects the task.edit permission)."
+msgstr ""
+
+msgid "Attach tags to a task by name, keeping the tags it already has. Requires the task.edit permission. A name the project does not have is refused with the available tags listed, unless create_missing_tags is true. Returns the task's tags after the change."
+msgstr ""
+
+msgid "You do not have permission to edit this task's tags."
+msgstr ""
+
+msgid "tags must name at least one tag. Use pm_remove_tags to detach tags."
+msgstr ""
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field. Returns the created task card."
+msgstr ""
+
+msgid "Detach tags from a task by name, keeping its other tags. The tag stays in the project. Requires the task.edit permission. Names the task does not carry are reported in not_on_task rather than failing. Returns the task's tags after the change."
+msgstr ""
+
+msgid "tags must name at least one tag."
+msgstr ""
+
+msgid "Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields, tags). Pass 0 for assignee/milestone/sprint/parent to clear them; the tags field replaces the whole tag set, an empty array clears it. Use pm_move_task to change status. Returns the updated task card."
+msgstr ""
