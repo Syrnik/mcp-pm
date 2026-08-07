@@ -5,7 +5,7 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.0] - 2026-08-07
 
 ### Added
 - **`pm_update_task_comment`** (Task PMCP-395). There was no way to fix a typo
