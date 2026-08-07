@@ -112,6 +112,81 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $this->assertStringContainsString('a test comment', $joined);
     }
 
+    public function testUpdateOwnComment(): void
+    {
+        $created = $this->makeTask();
+        $add = $this->callTool(new pmMcpAddTaskCommentTool(), array(
+            'task_id' => $created['task_id'],
+            'text'    => 'original text',
+        ));
+        $this->assertTrue($add['ok'], json_encode($add));
+        $comment_id = (int) $add['comment']['id'];
+
+        $r = $this->callTool(new pmMcpUpdateTaskCommentTool(), array(
+            'task_id'    => $created['task_id'],
+            'comment_id' => $comment_id,
+            'text'       => 'edited text',
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame('edited text', $r['comment']['text']);
+        $this->assertNotNull($r['comment']['update_datetime']);
+
+        $list = $this->callTool(new pmMcpListTaskCommentsTool(), array('task_id' => $created['task_id']));
+        $texts = array_column($list['comments'], 'text');
+        $this->assertContains('edited text', $texts);
+        $this->assertNotContains('original text', $texts);
+    }
+
+    public function testCannotUpdateSomeoneElsesComment(): void
+    {
+        $other = $this->otherContactId();
+        if ($other === null) {
+            $this->markTestSkipped('installation has no second contact');
+        }
+        (new pmProjectUserModel())->add($this->project_id, $other, 'member');
+
+        $created = $this->makeTask();
+        $add = $this->callTool(new pmMcpAddTaskCommentTool(), array(
+            'task_id' => $created['task_id'],
+            'text'    => 'admin comment',
+        ));
+        $this->assertTrue($add['ok'], json_encode($add));
+        $comment_id = (int) $add['comment']['id'];
+
+        wa()->setUser(new waUser($other));
+        try {
+            $r = $this->callTool(new pmMcpUpdateTaskCommentTool(), array(
+                'task_id'    => $created['task_id'],
+                'comment_id' => $comment_id,
+                'text'       => 'hijacked text',
+            ));
+        } finally {
+            wa()->setUser(new waUser(1));
+        }
+        $this->assertFalse($r['ok']);
+        $this->assertSame('access_denied', $r['error_code']);
+    }
+
+    public function testUpdateCommentNotFoundOnTask(): void
+    {
+        $created = $this->makeTask();
+        $other_task = $this->makeTask('ZZ Other task');
+        $add = $this->callTool(new pmMcpAddTaskCommentTool(), array(
+            'task_id' => $other_task['task_id'],
+            'text'    => 'on other task',
+        ));
+        $this->assertTrue($add['ok'], json_encode($add));
+        $comment_id = (int) $add['comment']['id'];
+
+        $r = $this->callTool(new pmMcpUpdateTaskCommentTool(), array(
+            'task_id'    => $created['task_id'],
+            'comment_id' => $comment_id,
+            'text'       => 'wrong task',
+        ));
+        $this->assertFalse($r['ok']);
+        $this->assertSame('not_found', $r['error_code']);
+    }
+
     public function testGetTaskByFullNumber(): void
     {
         $prefix = $this->setPrefix('ZZQA');

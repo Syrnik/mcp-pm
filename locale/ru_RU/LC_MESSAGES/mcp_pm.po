@@ -590,3 +590,18 @@ msgstr "В tags нужно указать хотя бы один тег."
 
 msgid "Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields, tags). Pass 0 for assignee/milestone/sprint/parent to clear them; the tags field replaces the whole tag set, an empty array clears it. Use pm_move_task to change status. Returns the updated task card."
 msgstr "Обновляет поля задачи (тема, описание, приоритет, тип, исполнитель, даты, веха, спринт, родитель, оценка, прогресс, кастомные поля, теги). Передайте 0 для assignee/milestone/sprint/parent, чтобы очистить; поле tags заменяет весь набор тегов, пустой массив снимает все. Для смены статуса используйте pm_move_task. Возвращает обновлённую карточку задачи."
+
+msgid "Update task comment"
+msgstr "Изменить комментарий к задаче"
+
+msgid "Edit the text of your own comment on a task."
+msgstr "Изменяет текст своего комментария к задаче."
+
+msgid "Edit the text of a comment on a task. Only the comment's own author may edit it. Returns the updated comment."
+msgstr "Изменяет текст комментария к задаче. Редактировать может только автор комментария. Возвращает обновлённый комментарий."
+
+msgid "Comment not found on this task."
+msgstr "Комментарий не найден на этой задаче."
+
+msgid "You can only edit your own comments."
+msgstr "Редактировать можно только свои комментарии."

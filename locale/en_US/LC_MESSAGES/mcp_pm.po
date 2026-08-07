@@ -590,3 +590,18 @@ msgstr ""
 
 msgid "Update task fields (subject, description, priority, type, assignee, dates, milestone, sprint, parent, estimate, progress, custom fields, tags). Pass 0 for assignee/milestone/sprint/parent to clear them; the tags field replaces the whole tag set, an empty array clears it. Use pm_move_task to change status. Returns the updated task card."
 msgstr ""
+
+msgid "Update task comment"
+msgstr ""
+
+msgid "Edit the text of your own comment on a task."
+msgstr ""
+
+msgid "Edit the text of a comment on a task. Only the comment's own author may edit it. Returns the updated comment."
+msgstr ""
+
+msgid "Comment not found on this task."
+msgstr ""
+
+msgid "You can only edit your own comments."
+msgstr ""
