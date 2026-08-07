@@ -62,6 +62,7 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpMoveTaskTool());
         $registry->addTool(new pmMcpAssignTaskTool());
         $registry->addTool(new pmMcpAddTaskCommentTool());
+        $registry->addTool(new pmMcpUpdateTaskCommentTool());
         $registry->addTool(new pmMcpManageChecklistTool());
         $registry->addTool(new pmMcpManageWatchersTool());
         $registry->addTool(new pmMcpManageDependenciesTool());
@@ -301,6 +302,13 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Tasks'),
                     'title'       => _wp('Add task comment'),
                     'description' => _wp('Add a comment to a task (public or internal).'),
+                ),
+                array(
+                    'name'        => 'pm_update_task_comment',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Update task comment'),
+                    'description' => _wp('Edit the text of your own comment on a task.'),
                 ),
                 array(
                     'name'        => 'pm_manage_checklist',

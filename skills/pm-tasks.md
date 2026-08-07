@@ -141,6 +141,11 @@ To *find* tasks by tag, `pm_list_tasks` still takes a numeric `tag_id` —
 `pm_list_task_comments` returns them oldest-first with the author's name and
 the `is_internal` flag.
 
+**`pm_update_task_comment`** — edits a comment's `text`. Author-only: even a
+project admin or app-admin cannot edit someone else's comment, and there is no
+`is_internal` override — that flag is fixed at creation. `comment_id` must
+belong to the `task_id` given, or the call fails with `not_found`.
+
 **`pm_manage_checklist`** — one tool, five actions:
 
 | `action` | Needs |

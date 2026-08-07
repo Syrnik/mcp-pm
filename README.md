@@ -33,7 +33,7 @@ project wiki through the MCP JSON-RPC protocol.
 | Group    | Right group   | Tools |
 |----------|---------------|-------|
 | Read     | `pm.read`     | list_projects, get_project, list_statuses, get_workflow, list_project_users, list_tags, list_milestones |
-| Tasks    | `pm.tasks`    | list_tasks, get_task, list_task_comments, create_task, update_task, move_task, assign_task, add_task_comment, manage_checklist, manage_watchers, manage_dependencies, delete_task |
+| Tasks    | `pm.tasks`    | list_tasks, get_task, list_task_comments, create_task, update_task, move_task, assign_task, add_task_comment, update_task_comment, manage_checklist, manage_watchers, manage_dependencies, delete_task |
 | Projects | `pm.projects` | create_project, update_project, add_project_user, remove_project_user |
 | Wiki     | `pm.wiki`     | list_wiki_pages, get_wiki_page, create_wiki_page, update_wiki_page |
 | Sprints  | `pm.read`     | list_sprints, get_sprint |

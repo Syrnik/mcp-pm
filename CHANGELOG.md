@@ -5,7 +5,19 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.0] - 2026-08-07
+
+### Added
+- **`pm_update_task_comment`** (Task PMCP-395). There was no way to fix a typo
+  or correct a comment once posted — `pm_add_task_comment` only appends, and
+  the only edit path lived in the backend's own JSON controller, never exposed
+  over MCP. The new tool mirrors that controller's `editAction()` exactly:
+  `text` can only be changed by the comment's own author, with no override for
+  project admins/managers or app-admins — matching what was actually requested
+  rather than the looser rule `pm_delete_task_comment` would use if it existed.
+  `comment_id` must belong to the `task_id` given, so a stale or foreign id is
+  refused with `not_found` rather than silently rewriting a comment on the
+  wrong task.
 
 ## [1.3.0] - 2026-08-02
 

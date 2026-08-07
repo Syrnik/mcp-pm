@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 class pmMcpSmokeTest extends TestCase
 {
-    private const EXPECTED_TOOL_COUNT = 31;
+    private const EXPECTED_TOOL_COUNT = 32;
 
     private function plugin(): mcpPmPlugin
     {
