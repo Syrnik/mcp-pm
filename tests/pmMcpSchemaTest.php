@@ -144,6 +144,38 @@ class pmMcpSchemaTest extends TestCase
         )));
     }
 
+    // ---- sprint write tools ----
+
+    public function testManageSprintRejectsUnknownAction(): void
+    {
+        $errors = (new pmMcpManageSprintTool())->validate(array('sprint_id' => 1, 'action' => 'bogus'));
+        $this->assertNotEmpty($errors, 'unknown action enum must be reported');
+    }
+
+    public function testManageSprintAcceptsKnownActions(): void
+    {
+        foreach (array('activate', 'complete', 'delete') as $action) {
+            $this->assertSame(array(), (new pmMcpManageSprintTool())->validate(array('sprint_id' => 1, 'action' => $action)));
+        }
+    }
+
+    public function testCreateSprintRejectsEmptyProjectIdsAndMissingName(): void
+    {
+        $tool = new pmMcpCreateSprintTool();
+        $this->assertNotEmpty($tool->validate(array('project_ids' => array(), 'name' => 'X')), 'empty project_ids must be reported');
+        $this->assertNotEmpty($tool->validate(array('project_ids' => array(1))), 'missing name must be reported');
+    }
+
+    public function testCreateSprintAcceptsMinimalArguments(): void
+    {
+        $this->assertSame(array(), (new pmMcpCreateSprintTool())->validate(array('project_ids' => array(1), 'name' => 'X')));
+    }
+
+    public function testUpdateSprintValidWithOnlySprintId(): void
+    {
+        $this->assertSame(array(), (new pmMcpUpdateSprintTool())->validate(array('sprint_id' => 1)));
+    }
+
     public function testValidateCoercesNumericTaskReference(): void
     {
         // task_id is declared as a string so "AUTH-32" validates; an integer id

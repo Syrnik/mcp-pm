@@ -4,9 +4,10 @@ MCP tools for the Webasyst **Project Management** app (`wa-apps/pm`). Lets LLM
 agents work with projects, tasks, assignees, sprints, milestones and the
 project wiki through the MCP JSON-RPC protocol.
 
-> **Status: feature-complete.** All 28 tools across the Read, Tasks, Projects
-> and Wiki right groups are implemented, plus the PHPUnit suite and ru_RU/en_US
-> localization (stages #78.1 – #78.8 of the "MCP for PM" project).
+> **Status: feature-complete.** All 35 tools across the Read, Tasks, Projects,
+> Wiki and Sprints right groups are implemented, plus the PHPUnit suite and
+> ru_RU/en_US localization (stages #78.1 – #78.8 of the "MCP for PM" project,
+> sprint write support added under PMCP-400).
 
 ## Architecture
 
@@ -14,7 +15,10 @@ project wiki through the MCP JSON-RPC protocol.
   (`registerTools`), `mcp_plugin_rights_v1` (`registerRights`) and
   `mcp_skill_registry_v1` (`registerSkills`).
 - `lib/config/requirements.php` — requires `app.mcp >= 1.2.0` (the release that
-  introduced the skill registry) and `app.pm >= 0.25.0`.
+  introduced the skill registry) and `app.pm >= 0.33.1` (the version the
+  sprint tools were developed and tested against; the underlying API —
+  `pmSprint::canEdit(array)` and the 4-argument `pmSprint::save()` — first
+  appeared in 0.26.0).
 - `skills/*.md` — the agent-facing documentation published through the skill
   registry (see [Skills](#skills)).
 - `lib/mcpPm.plugin.php` — `mcpPmPlugin extends mcpPlugin`. Eager-loads all
@@ -28,15 +32,19 @@ project wiki through the MCP JSON-RPC protocol.
   envelope. Anonymous callers (token `act_as = 0`) are rejected with
   `access_denied` in every tool.
 
-## Tool groups (planned, 29 tools)
+## Tool groups (35 tools)
 
 | Group    | Right group   | Tools |
 |----------|---------------|-------|
-| Read     | `pm.read`     | list_projects, get_project, list_statuses, get_workflow, list_project_users, list_tags, list_milestones |
-| Tasks    | `pm.tasks`    | list_tasks, get_task, list_task_comments, create_task, update_task, move_task, assign_task, add_task_comment, update_task_comment, manage_checklist, manage_watchers, manage_dependencies, delete_task |
+| Read     | `pm.read`     | list_projects, get_project, list_statuses, get_workflow, list_project_users, list_tags, list_milestones, list_tasks, get_task, list_task_comments, list_sprints, get_sprint |
+| Tasks    | `pm.tasks`    | create_task, update_task, move_task, assign_task, add_task_comment, update_task_comment, manage_checklist, manage_watchers, manage_dependencies, delete_task, add_tags, remove_tags |
 | Projects | `pm.projects` | create_project, update_project, add_project_user, remove_project_user |
 | Wiki     | `pm.wiki`     | list_wiki_pages, get_wiki_page, create_wiki_page, update_wiki_page |
-| Sprints  | `pm.read`     | list_sprints, get_sprint |
+| Sprints  | `pm.sprints`  | create_sprint, update_sprint, manage_sprint (activate/complete/delete) |
+
+Sprint reads (`list_sprints`, `get_sprint`) stay in `pm.read` for backward
+compatibility — moving them into `pm.sprints` would silently narrow the scope
+of every MCP token already issued.
 
 The tool name equals its right name (helpdesk convention): a token scope
 lists tool names directly.
@@ -102,7 +110,7 @@ agent otherwise learns by getting them wrong, so the plugin ships them as
 |----------|------|--------|
 | `pm-basics` | `skills/pm-basics.md` | The `ok`/error envelope and its error codes, the two permission layers, the `AUTH-32` reference syntax, the "`0` clears a reference" rule, a safe working order |
 | `pm-tasks` | `skills/pm-tasks.md` | List filters and their `-1` sentinels, creating tasks, why status and assignee have their own tools, comments, checklist, watchers, relations, deletion |
-| `pm-projects` | `skills/pm-projects.md` | What is writable vs backend-only, statuses and workflow transitions, roles and ownership, sprints and the backlog |
+| `pm-projects` | `skills/pm-projects.md` | What is writable vs backend-only, statuses and workflow transitions, roles and ownership, cross-project sprints (create/update/activate/complete/delete) and the backlog |
 | `pm-wiki` | `skills/pm-wiki.md` | Sections vs articles, the two access gates and per-page visibility, publication flags, moves |
 
 The split mirrors the right groups, so a token holding only `pm.read` has no
@@ -128,7 +136,7 @@ latter survives.
 ## Dependencies
 
 - Webasyst MCP app (`app.mcp` >= 1.2.0)
-- Webasyst Project Management app (`app.pm` >= 0.25.0)
+- Webasyst Project Management app (`app.pm` >= 0.33.1)
 
 ## Activation
 

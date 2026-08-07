@@ -84,9 +84,14 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpCreateWikiPageTool());
         $registry->addTool(new pmMcpUpdateWikiPageTool());
 
-        // ===== Stage 6 — Sprints (2 tools, read-only) =====
+        // ===== Stage 6 — Sprints: read (2 tools) =====
         $registry->addTool(new pmMcpListSprintsTool());
         $registry->addTool(new pmMcpGetSprintTool());
+
+        // ===== Stage 8 — Sprints: write (3 tools) =====
+        $registry->addTool(new pmMcpCreateSprintTool());
+        $registry->addTool(new pmMcpUpdateSprintTool());
+        $registry->addTool(new pmMcpManageSprintTool());
     }
 
     /**
@@ -411,6 +416,29 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Wiki'),
                     'title'       => _wp('Update wiki page'),
                     'description' => _wp('Update or move a wiki page (requires the wiki.edit permission).'),
+                ),
+
+                // ===== Sprints group — write (3 rights) =====
+                array(
+                    'name'        => 'pm_create_sprint',
+                    'group'       => 'pm.sprints',
+                    'group_title' => _wp('Sprints'),
+                    'title'       => _wp('Create sprint'),
+                    'description' => _wp('Create a sprint spanning one or more projects, with its workflow subset and auto-fill statuses (requires the sprint.edit permission).'),
+                ),
+                array(
+                    'name'        => 'pm_update_sprint',
+                    'group'       => 'pm.sprints',
+                    'group_title' => _wp('Sprints'),
+                    'title'       => _wp('Update sprint'),
+                    'description' => _wp('Update a sprint\'s name, goal, dates, projects, workflows and automation (requires the sprint.edit permission).'),
+                ),
+                array(
+                    'name'        => 'pm_manage_sprint',
+                    'group'       => 'pm.sprints',
+                    'group_title' => _wp('Sprints'),
+                    'title'       => _wp('Manage sprint lifecycle'),
+                    'description' => _wp('Activate, complete or delete a sprint (requires the sprint.edit permission; delete requires confirm).'),
                 ),
             ),
         );

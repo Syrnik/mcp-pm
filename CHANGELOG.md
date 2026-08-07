@@ -5,6 +5,69 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-08-07
+
+### Added
+- **Sprints can be written, not just read** (Task PMCP-400). pm's sprints are
+  M:N over projects — a sprint spans one project as often as several, and its
+  workflow subset and auto-fill statuses are chosen per project — but the
+  plugin could only list and read them. Three new tools cover the lifecycle:
+  `pm_create_sprint` (one or more projects, per-project workflow subset,
+  auto-fill statuses; always created `planned`), `pm_update_sprint` (partial
+  update; `project_ids`, `workflows` and `fill_status_ids` are each a
+  *replacement set* for the key you pass — omit the key entirely to keep the
+  current value) and `pm_manage_sprint` (`activate`/`complete`/`delete` in one
+  tool, mirroring the existing `pm_manage_checklist`/`pm_manage_watchers`
+  shape; `delete` requires `confirm`). All three sit in a new `pm.sprints`
+  right group.
+
+  `pmSprint::save()` replaces `project_ids`, `workflows` and
+  `fill_status_ids` as a whole on every call (delete-all-then-reinsert one
+  level down), so a naive partial update would silently wipe whatever it
+  didn't mention. `pm_update_sprint` re-reads the stored sprint and re-supplies
+  every relation array you didn't pass, and never lets a project you cannot
+  access be dropped from the set even if your `project_ids` omits it —
+  closing a real hole in pm's own `saveOneAction`, which trusts the posted
+  list alone. `status` is deliberately not settable through `pm_update_sprint`:
+  pm's UI lets it flip status directly, bypassing the activate/complete gates
+  and every side effect (auto-fill, auto-create-next, move-unfinished); use
+  `pm_manage_sprint` instead.
+
+  `pm_manage_sprint`'s `activate` enforces the `planned` status itself —
+  `pmSprint::activate()` has none of its own and would happily re-activate a
+  completed sprint. `complete` judges success by re-reading the sprint's
+  status rather than trusting `pmSprint::complete()`'s return value, which is
+  `null` both on refusal and on an ordinary completion with
+  `auto_create_next` off. It also works around a bug in that same method: its
+  `move_unfinished` step writes the "next sprint" id through a raw SQL
+  integer placeholder, which casts a PHP `null` (no next sprint) to `0`
+  rather than SQL `NULL` — every moved task would end up neither in the old
+  sprint, the new one, nor pm's own backlog (`sprint_id IS NULL`), invisible
+  everywhere. The tool captures the exact task ids before calling `complete()`
+  and, when no next sprint was created, corrects any of them left at
+  `sprint_id = 0` back to `NULL` through the ORM path, which nulls correctly.
+
+### Fixed
+- `pmMcpSprintHelper`'s docblock and `pm_list_sprints`' description both
+  claimed cross-project sprints were "an earlier design that was abandoned"
+  and treated a sprint as belonging to one project. That was never true of
+  the current pm schema (`pm_sprint` carries no `project_id` at all) and
+  contradicted the plugin's own `skills/pm-projects.md`, which already
+  documented sprints correctly. `pm_list_sprints`' `project_id` is now
+  optional (span every project you can access; a cross-project sprint is
+  listed once) and paginated; both read tools now expose the per-project
+  `workflows` selection, which was decorated onto every row by
+  `pmSprintModel` but never surfaced by either tool — an agent had no way to
+  see it before this release, which also made a correct partial update
+  impossible to write. Both tools narrow `project_ids`/`workflows` to the
+  projects you can access (`hidden_project_count`, `access_narrowed`) rather
+  than leaking the id of a project you have no role in; the deprecated
+  `project_id` convenience field is now derived from that narrowed set so it
+  never names a project you cannot see.
+- The integration test base's sprint teardown deleted `pm_sprint_project` and
+  `pm_sprint_fill_status` but not `pm_sprint_workflow`, leaking rows across
+  test runs once tests started exercising per-project workflow selections.
+
 ## [1.4.0] - 2026-08-07
 
 ### Added

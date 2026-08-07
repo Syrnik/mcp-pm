@@ -605,3 +605,90 @@ msgstr ""
 
 msgid "You can only edit your own comments."
 msgstr ""
+
+msgid "Create sprint"
+msgstr ""
+
+msgid "Create a sprint spanning one or more projects, with its workflow subset and auto-fill statuses (requires the sprint.edit permission)."
+msgstr ""
+
+msgid "Update sprint"
+msgstr ""
+
+msgid "Update a sprint's name, goal, dates, projects, workflows and automation (requires the sprint.edit permission)."
+msgstr ""
+
+msgid "Manage sprint lifecycle"
+msgstr ""
+
+msgid "Activate, complete or delete a sprint (requires the sprint.edit permission; delete requires confirm)."
+msgstr ""
+
+msgid "Sprints"
+msgstr ""
+
+msgid "Create a sprint spanning one or more projects, with a per-project workflow subset and auto-fill statuses. Always created \"planned\" — use pm_manage_sprint to activate it. Requires the sprint.edit permission in at least one project and membership in every project listed. Returns the created sprint card."
+msgstr ""
+
+msgid "At least one project is required."
+msgstr ""
+
+msgid "Update a sprint's name, goal, dates, project set, workflow selection or auto-fill statuses. Only supplied fields change. project_ids/workflows/fill_status_ids are each a replacement set for the key you pass — omit the key to keep the current value; projects you cannot access are never removed. Status is not settable here — use pm_manage_sprint to activate, complete or delete. Requires the sprint.edit permission. Returns the updated sprint card."
+msgstr ""
+
+msgid "project_ids must be a non-empty list. Omit the key entirely to keep the current set."
+msgstr ""
+
+msgid "workflows must be a list of {project_id, workflow_ids} objects."
+msgstr ""
+
+msgid "Workflow \"%1$s\" is not attached to project %2$d."
+msgstr ""
+
+msgid "Status %d cannot be used for auto-fill: it does not belong to the selected workflows."
+msgstr ""
+
+msgid "Sprint name cannot be empty."
+msgstr ""
+
+msgid "%d task(s) are still attached to this sprint but their project is no longer part of it, so they no longer appear on the sprint board. Move them with pm_update_task (sprint_id: 0) or re-add the project."
+msgstr ""
+
+msgid "Some of this sprint's auto-fill statuses no longer belong to its (possibly narrower) workflow selection. They were kept as-is; pass fill_status_ids explicitly to clean them up."
+msgstr ""
+
+msgid "Activate, complete or delete a sprint. activate: planned -> active, optionally pulling in backlog tasks (auto_fill). complete: active -> completed, renames the sprint with its date range and applies auto_create_next / move_unfinished. delete: removes the sprint and detaches (does not delete) its tasks — requires confirm. Requires the sprint.edit permission."
+msgstr ""
+
+msgid "Unknown action \"%s\"."
+msgstr ""
+
+msgid "Only planned sprints can be activated."
+msgstr ""
+
+msgid "Auto-fill stopped at its 500-task limit; more matching backlog tasks may remain unassigned."
+msgstr ""
+
+msgid "Only active sprints can be completed."
+msgstr ""
+
+msgid "The sprint was not completed."
+msgstr ""
+
+msgid "You are not a member of any of this sprint's projects."
+msgstr ""
+
+msgid "You need the sprint.edit permission in at least one of these projects."
+msgstr ""
+
+msgid "Sprint name is required."
+msgstr ""
+
+msgid "List sprints you can access (active first, then planned, then completed) with automation settings. Omit project_id to span every project you can access; a sprint spanning several projects is returned once. Projects you cannot access are stripped from project_ids/workflows on each row — hidden_project_count and access_narrowed flag when that happened. Paginated. Backlog tasks are listed via pm_list_tasks with sprint_id=-1."
+msgstr ""
+
+msgid "Get a sprint card: projects, per-project workflow selection, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in at least one of the sprint's projects; projects you cannot access are hidden from the card (see hidden_project_count)."
+msgstr ""
+
+msgid "None of the listed projects has a workflow attached, so there are no statuses to auto-fill from. Attach a workflow to the project first."
+msgstr ""
