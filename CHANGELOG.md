@@ -5,7 +5,7 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.0] - 2026-08-07
+## [Unreleased]
 
 ### Added
 - **Sprints can be written, not just read** (Task PMCP-400). pm's sprints are
@@ -46,6 +46,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   everywhere. The tool captures the exact task ids before calling `complete()`
   and, when no next sprint was created, corrects any of them left at
   `sprint_id = 0` back to `NULL` through the ORM path, which nulls correctly.
+
+- **Links between a task and a helpdesk request, crm deal or shop order**
+  (Task PMCP-410). pm lets you create a task straight from a helpdesk request
+  and see it listed back on that request's page; the plugin had no way to
+  read, create or remove that link. pm stores it as one table shared by all
+  three integrated apps rather than a helpdesk-specific one, so the coverage
+  is generic rather than helpdesk-only: `pm_get_task` gains an
+  `external_links` array, `pm_manage_external_links` adds or removes one link
+  (`app_id`: `helpdesk`/`crm`/`shop`), and `pm_find_tasks_by_external` is the
+  reverse lookup — which tasks are linked to a given request/deal/order.
+  `pm_create_task` also takes an optional `external_links` array, for
+  creating and linking a task in one call, the same way pm's own helpdesk
+  integration seeds the link when a task is opened from a request.
+
+  Three ways this plugin is stricter than pm's own controllers, which write
+  the link table directly and skip every one of these checks: the linked
+  record must actually exist (`not_found` on an id nobody wrote), the write
+  path requires `task.edit` (pm's `externalAdd`/`externalRemove` actions do
+  not check it at all — only the REST API does, which this plugin already
+  mirrors for other tools), and a link whose linked app is not installed or
+  whose record was since deleted is still returned (`exists: false`,
+  `element_name: null`) rather than silently dropped the way pm's own
+  `_doEnrich` drops it — pm has no reverse cascade, so that link would
+  otherwise be invisible and permanently stuck.
+
+  The `pm` setting that toggles the helpdesk integration only gates pm's own
+  UI injection into helpdesk's pages — it does not gate the tools, since
+  `pm`'s own controllers and REST API ignore it too. The read tools report it
+  as `integration_enabled` for information, not as a permission check.
+
+  `pm_find_tasks_by_external`'s project-access filtering also closes a minor
+  disclosure `helpdeskLinkedTasksAction()` has no equivalent for: the linked
+  record's own name is only returned once the caller can see at least one
+  task actually linked to it, so knowing (or guessing) an id is not on its
+  own enough to read another app's record through this tool. `hidden_count`
+  and the new `stale_link_count` (a link row whose task was deleted outside
+  `pm_delete_task`, and so left orphaned) are reported separately, so a
+  `count: 0` result can't be misread as "never linked" when it actually means
+  "linked, but not visible."
 
 ### Fixed
 - `pmMcpSprintHelper`'s docblock and `pm_list_sprints`' description both

@@ -692,3 +692,57 @@ msgstr ""
 
 msgid "None of the listed projects has a workflow attached, so there are no statuses to auto-fill from. Attach a workflow to the project first."
 msgstr ""
+
+msgid "Unknown app_id \"%s\". Use one of: %s."
+msgstr ""
+
+msgid "The %s app is not installed; a link to it cannot be created."
+msgstr ""
+
+msgid "Link a task to a record in another integrated app (helpdesk request, crm deal, shop order) or remove that link. Requires the task.edit permission. Returns the task's external links after the change."
+msgstr ""
+
+msgid "You do not have permission to edit this task's external links."
+msgstr ""
+
+msgid "external_id must be a positive integer id."
+msgstr ""
+
+msgid "No %1$s record with id %2$s was found; the link was not created."
+msgstr ""
+
+msgid "That link does not exist on this task."
+msgstr ""
+
+msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see."
+msgstr ""
+
+msgid "external_id is required."
+msgstr ""
+
+msgid "Find tasks by external link"
+msgstr ""
+
+msgid "Find tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order), filtered to projects you can access."
+msgstr ""
+
+msgid "Manage external links"
+msgstr ""
+
+msgid "Link a task to a record in another integrated app (helpdesk request, crm deal, shop order), or remove that link (requires the task.edit permission)."
+msgstr ""
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr ""
+
+msgid "external_links[%d] must be an object with app_id and external_id."
+msgstr ""
+
+msgid "external_links[%1$d].app_id \"%2$s\" is not one of: %3$s."
+msgstr ""
+
+msgid "external_links[%d].external_id must be a positive integer id."
+msgstr ""
+
+msgid "external_links[%1$d]: no %2$s record with id %3$s was found; the task was not created."
+msgstr ""

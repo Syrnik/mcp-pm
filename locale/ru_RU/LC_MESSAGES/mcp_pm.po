@@ -692,3 +692,57 @@ msgstr "Возвращает карточку спринта: проекты, в
 
 msgid "None of the listed projects has a workflow attached, so there are no statuses to auto-fill from. Attach a workflow to the project first."
 msgstr "Ни к одному из перечисленных проектов не подключён воркфлоу, поэтому статусов для автозаполнения нет. Сначала подключите воркфлоу к проекту."
+
+msgid "Unknown app_id \"%s\". Use one of: %s."
+msgstr "Неизвестный app_id «%s». Используйте одно из значений: %s."
+
+msgid "The %s app is not installed; a link to it cannot be created."
+msgstr "Приложение %s не установлено; связь с ним создать нельзя."
+
+msgid "Link a task to a record in another integrated app (helpdesk request, crm deal, shop order) or remove that link. Requires the task.edit permission. Returns the task's external links after the change."
+msgstr "Связывает задачу с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина) или снимает эту связь. Требует права task.edit. Возвращает внешние связи задачи после изменения."
+
+msgid "You do not have permission to edit this task's external links."
+msgstr "У вас нет права редактировать внешние связи этой задачи."
+
+msgid "external_id must be a positive integer id."
+msgstr "external_id должен быть положительным целочисленным идентификатором."
+
+msgid "No %1$s record with id %2$s was found; the link was not created."
+msgstr "Запись %1$s с id %2$s не найдена; связь не создана."
+
+msgid "That link does not exist on this task."
+msgstr "Такой связи у этой задачи нет."
+
+msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see."
+msgstr "Ищет задачи pm, связанные с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина). Возвращает только задачи из доступных вам проектов; hidden_count сообщает, сколько ещё найдено в проектах, которые вы не видите."
+
+msgid "external_id is required."
+msgstr "external_id обязателен."
+
+msgid "Find tasks by external link"
+msgstr "Найти задачи по внешней связи"
+
+msgid "Find tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order), filtered to projects you can access."
+msgstr "Находит задачи, связанные с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина), в пределах доступных вам проектов."
+
+msgid "Manage external links"
+msgstr "Управление внешними связями"
+
+msgid "Link a task to a record in another integrated app (helpdesk request, crm deal, shop order), or remove that link (requires the task.edit permission)."
+msgstr "Связывает задачу с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина) или снимает эту связь (требует права task.edit)."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr "Создаёт задачу в проекте. Требует членства в проекте с правом task.create. workflow_id обязателен, если у проекта не ровно один воркфлоу; исполнитель, веха и спринт необязательны — не указывайте их (или передайте 0), чтобы оставить пустыми. Теги можно задать тем же вызовом через поле tags, а связи с helpdesk/crm/shop-записями — через external_links. Возвращает карточку созданной задачи."
+
+msgid "external_links[%d] must be an object with app_id and external_id."
+msgstr "external_links[%d] должен быть объектом с app_id и external_id."
+
+msgid "external_links[%1$d].app_id \"%2$s\" is not one of: %3$s."
+msgstr "external_links[%1$d].app_id «%2$s» не входит в список: %3$s."
+
+msgid "external_links[%d].external_id must be a positive integer id."
+msgstr "external_links[%d].external_id должен быть положительным целочисленным идентификатором."
+
+msgid "external_links[%1$d]: no %2$s record with id %3$s was found; the task was not created."
+msgstr "external_links[%1$d]: запись %2$s с id %3$s не найдена; задача не создана."

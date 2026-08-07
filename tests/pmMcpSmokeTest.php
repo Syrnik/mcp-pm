@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 class pmMcpSmokeTest extends TestCase
 {
-    private const EXPECTED_TOOL_COUNT = 35;
+    private const EXPECTED_TOOL_COUNT = 37;
 
     private function plugin(): mcpPmPlugin
     {
@@ -51,6 +51,7 @@ class pmMcpSmokeTest extends TestCase
             'pmMcpWorkflowHelper',
             'pmMcpWikiHelper',
             'pmMcpSprintHelper',
+            'pmMcpExternalHelper',
         ) as $class) {
             $this->assertTrue(class_exists($class), "$class must autoload");
         }

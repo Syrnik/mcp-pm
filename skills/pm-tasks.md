@@ -196,6 +196,67 @@ description as a substitute.
 - Requires `task.edit`. The response returns both tasks' relations, so you can
   see the mutuality without a second call.
 
+## Links to other apps
+
+A task can be linked to a record in another integrated app — a helpdesk
+request, a crm deal, a shop order — the same way pm's UI lets you create a
+task straight from a helpdesk request and see it listed back on that request's
+page. pm stores this as one generic table shared by all three apps: there is
+no separate "helpdesk link" from a "crm link", so `pm_get_task`'s
+`external_links` and both tools below always cover all three.
+
+`pm_manage_external_links` adds or removes one link:
+
+```json
+{"task_id": "PMCP-410", "action": "add", "app_id": "helpdesk", "external_id": "412"}
+```
+
+- `app_id` is one of `helpdesk`, `crm`, `shop`. `external_id` is that record's
+  id (as a string).
+- The record must actually exist — an unknown id is refused with `not_found`
+  before anything is written, unlike pm's own UI, which will happily link to a
+  request that was never real.
+- Repeating an identical `add` is a no-op (`already_exists: true`), same as
+  `pm_manage_dependencies`.
+- Requires `task.edit`. The response returns the task's full `external_links`
+  after the change.
+- **`integration_enabled`** on each link entry reflects pm's *"integration
+  with helpdesk"* setting — but that setting only controls whether pm injects
+  its UI into the other app's pages. It does **not** gate linking or reading:
+  a link works and is visible whether the setting is on or off, and this flag
+  is informational only. Do not treat it as a permission check.
+- **A dangling link is shown, not hidden.** If the linked request/deal/order
+  was later deleted, `exists: false` and `element_name: null`, but the link
+  itself still shows up and can be removed with `pm_manage_external_links`.
+  pm's own UI has no reverse cascade for this — the row survives the deleted
+  record forever unless something removes it.
+
+`pm_find_tasks_by_external` is the reverse lookup — "which tasks were opened
+for helpdesk request 412":
+
+```json
+{"app_id": "helpdesk", "external_id": "412"}
+```
+
+`app_id` defaults to `helpdesk`. Results are filtered to the projects you can
+access; `hidden_count` says how many more linked tasks exist in projects you
+cannot see, and `stale_link_count` how many link rows point at a task that no
+longer exists (a task deleted outside `pm_delete_task`, which is the only path
+that removes the link along with it). Both are separate from `count: 0`, so a
+zero-and-zero result means the record really has no linked tasks — a nonzero
+`hidden_count` or `stale_link_count` means it does, you just can't see them.
+
+`external.element_name` — the linked record's own summary/name — is only
+included once `count > 0`, i.e. once you can see at least one task actually
+linked to it. Knowing or guessing an id is not enough on its own to read
+another app's record through this tool.
+
+`pm_create_task` also takes an optional `external_links` array, for the
+common case of creating the task and linking it in one call — every link is
+validated the same way (record must exist) *before* the task is created, so a
+bad id refuses the whole call rather than leaving a task with a link silently
+missing.
+
 ## Deleting a task
 
 `pm_delete_task` needs `confirm: true` and the `task.delete` permission. It
@@ -215,3 +276,5 @@ the task to a closed status when the intent is merely "this is done/dropped".
 - After a write, the tool returns the updated card — do not re-fetch it.
 - A `not_found` on a task you can see in the UI usually means the token's
   `act_as` contact is not a member of that project.
+- `pm_list_tasks` rows do not carry `external_links` — read the full card with
+  `pm_get_task` for that.

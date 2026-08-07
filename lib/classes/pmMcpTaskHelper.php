@@ -528,6 +528,10 @@ class pmMcpTaskHelper
         // read from both ends — see pmMcpDependencyHelper.
         $card['dependencies'] = pmMcpDependencyHelper::forTask($id);
 
+        // Links to records in other integrated apps (helpdesk request, crm
+        // deal, shop order) — see pmMcpExternalHelper.
+        $card['external_links'] = pmMcpExternalHelper::forTask($id);
+
         // Custom fields: field_id => value map.
         $card['custom_fields'] = (array) (new pmFieldDataModel())->getByTask($id);
 

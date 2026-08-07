@@ -9,7 +9,7 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_create_task'; }
     public function getRight()       { return 'pm_create_task'; }
-    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field. Returns the created task card.'); }
+    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card.'); }
 
     public function getInputSchema()
     {
@@ -43,6 +43,18 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                     'type'        => 'boolean',
                     'default'     => false,
                     'description' => 'Create tags the project does not have yet. Default false: an unknown name is refused with the project\'s available_tags instead, so a typo does not become a new tag.',
+                ),
+                'external_links'      => array(
+                    'type'        => 'array',
+                    'items'       => array(
+                        'type'       => 'object',
+                        'required'   => array('app_id', 'external_id'),
+                        'properties' => array(
+                            'app_id'      => array('type' => 'string', 'enum' => pmMcpExternalHelper::apps()),
+                            'external_id' => array('type' => 'string', 'minLength' => 1),
+                        ),
+                    ),
+                    'description' => 'Links to records in other integrated apps (e.g. the helpdesk request this task was opened from). Each entry\'s record must exist; an unknown id is refused before the task is created.',
                 ),
             ),
         );
@@ -135,6 +147,39 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                 }
             }
 
+            // External links (helpdesk request, crm deal, shop order): resolved
+            // and validated before create() runs, same reasoning as tags above
+            // — a rejected link must not leave a task behind that the caller
+            // was not told about.
+            $external_links = array();
+            if (!empty($arguments['external_links']) && is_array($arguments['external_links'])) {
+                foreach ($arguments['external_links'] as $i => $entry) {
+                    if (!is_array($entry)) {
+                        return $this->softFail('invalid_param', sprintf(_wp('external_links[%d] must be an object with app_id and external_id.'), $i));
+                    }
+                    $link_app_id = is_scalar($entry['app_id'] ?? null) ? (string) $entry['app_id'] : '';
+                    $link_external_id = pmMcpExternalHelper::normalizeExternalId($entry['external_id'] ?? null);
+
+                    if (!in_array($link_app_id, pmMcpExternalHelper::apps(), true)) {
+                        return $this->softFail('invalid_param', sprintf(
+                            _wp('external_links[%1$d].app_id "%2$s" is not one of: %3$s.'),
+                            $i, $entry['app_id'] ?? '', implode(', ', pmMcpExternalHelper::apps())
+                        ));
+                    }
+                    if ($link_external_id === '') {
+                        return $this->softFail('invalid_param', sprintf(_wp('external_links[%d].external_id must be a positive integer id.'), $i));
+                    }
+                    pmMcpExternalHelper::assertLinkable($link_app_id);
+                    if (!pmMcpExternalHelper::externalExists($link_app_id, $link_external_id)) {
+                        return $this->softFail('not_found', sprintf(
+                            _wp('external_links[%1$d]: no %2$s record with id %3$s was found; the task was not created.'),
+                            $i, $link_app_id, $link_external_id
+                        ));
+                    }
+                    $external_links[] = array('app_id' => $link_app_id, 'external_id' => $link_external_id);
+                }
+            }
+
             $task_id = pmTask::create($data, $this->getUserId());
 
             if ($tag_names) {
@@ -145,6 +190,23 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                     'add',
                     $this->getUserId()
                 );
+            }
+
+            if ($external_links) {
+                // pmTaskExternalModel::add() directly, not
+                // pmTask::addExternalLink() — the latter requires canEdit()
+                // (task.edit), while this tool is gated on task.create. A role
+                // with create-but-not-edit would create the task and then hit
+                // a 403 on the very links it asked for in the same call: the
+                // "task with silently lost links" state this pre-validation
+                // exists to avoid. Whoever just created the task has an
+                // obvious claim to also link it — mirrors pm's own bulk save
+                // path (pmTask.actions.php::saveAction()'s external_links
+                // branch), which does the same.
+                $ext_model = new pmTaskExternalModel();
+                foreach ($external_links as $link) {
+                    $ext_model->add((int) $task_id, $link['app_id'], $link['external_id']);
+                }
             }
 
             return $this->ok(array(

@@ -92,6 +92,10 @@ class mcpPmPlugin extends mcpPlugin
         $registry->addTool(new pmMcpCreateSprintTool());
         $registry->addTool(new pmMcpUpdateSprintTool());
         $registry->addTool(new pmMcpManageSprintTool());
+
+        // ===== Stage 9 — External links: helpdesk/crm/shop (2 tools) =====
+        $registry->addTool(new pmMcpManageExternalLinksTool());
+        $registry->addTool(new pmMcpFindTasksByExternalTool());
     }
 
     /**
@@ -255,6 +259,13 @@ class mcpPmPlugin extends mcpPlugin
                     'title'       => _wp('List task comments'),
                     'description' => _wp('List the comments of a task with author name and the internal flag.'),
                 ),
+                array(
+                    'name'        => 'pm_find_tasks_by_external',
+                    'group'       => 'pm.read',
+                    'group_title' => _wp('Read'),
+                    'title'       => _wp('Find tasks by external link'),
+                    'description' => _wp('Find tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order), filtered to projects you can access.'),
+                ),
 
                 // ===== Read group — sprints (2 rights) =====
                 array(
@@ -356,6 +367,13 @@ class mcpPmPlugin extends mcpPlugin
                     'group_title' => _wp('Tasks'),
                     'title'       => _wp('Remove task tags'),
                     'description' => _wp('Detach tags from a task by name, leaving the tags themselves in the project (respects the task.edit permission).'),
+                ),
+                array(
+                    'name'        => 'pm_manage_external_links',
+                    'group'       => 'pm.tasks',
+                    'group_title' => _wp('Tasks'),
+                    'title'       => _wp('Manage external links'),
+                    'description' => _wp('Link a task to a record in another integrated app (helpdesk request, crm deal, shop order), or remove that link (requires the task.edit permission).'),
                 ),
 
                 // ===== Projects group — write (4 rights) =====
