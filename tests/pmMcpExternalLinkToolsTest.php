@@ -85,6 +85,7 @@ class pmMcpExternalLinkToolsTest extends pmMcpIntegrationTestCase
         $r = $this->callTool(new pmMcpCreateTaskTool(), array_merge(array(
             'project_id' => $this->project_id,
             'subject'    => $subject,
+            'type_slug'  => $this->defaultTypeSlug(),
         ), $extra));
         $this->assertTrue($r['ok'], json_encode($r));
         return $r;
@@ -474,6 +475,7 @@ class pmMcpExternalLinkToolsTest extends pmMcpIntegrationTestCase
         $r = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id'     => $this->project_id,
             'subject'        => 'ZZ Should not exist',
+            'type_slug'      => $this->defaultTypeSlug(),
             'external_links' => array(
                 array('app_id' => 'helpdesk', 'external_id' => '999999999'),
             ),

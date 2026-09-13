@@ -98,6 +98,21 @@ abstract class pmMcpIntegrationTestCase extends TestCase
     }
 
     /**
+     * A type_slug valid for a project's (first) workflow — pm rejects every
+     * task with none (PMCP-555), so tests that do not care which type a task
+     * gets still need to pass one.
+     */
+    protected function defaultTypeSlug($project_id = null)
+    {
+        $project_id = $project_id ?? $this->project_id;
+        $wfs = (new pmProjectModel())->getWorkflows((int) $project_id);
+        $wf = $wfs ? pmWorkflow::getWorkflow((string) reset($wfs)) : null;
+        $group = !empty($wf['type_group']) ? pmTypeConfig::getGroup($wf['type_group']) : null;
+        $types = array_values($group['types'] ?? pmTypeConfig::getAllTypes());
+        return $types ? (string) $types[0]['slug'] : 'task';
+    }
+
+    /**
      * Create a sprint directly through the model and attach it to the given
      * projects (plus, optionally, per-project workflow selections and
      * auto-fill statuses) the same way pmSprint::save() would. Torn down by

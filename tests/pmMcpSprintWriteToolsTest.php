@@ -30,6 +30,7 @@ class pmMcpSprintWriteToolsTest extends pmMcpIntegrationTestCase
         $r = $this->callTool(new pmMcpCreateTaskTool(), array_merge(array(
             'project_id' => $project_id,
             'subject'    => 'ZZ Task ' . uniqid(),
+            'type_slug'  => $this->defaultTypeSlug($project_id),
         ), $overrides));
         $this->assertTrue($r['ok'], json_encode($r));
         return (int) $r['task_id'];
