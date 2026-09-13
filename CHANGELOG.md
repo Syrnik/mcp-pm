@@ -106,6 +106,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The integration test base's sprint teardown deleted `pm_sprint_project` and
   `pm_sprint_fill_status` but not `pm_sprint_workflow`, leaking rows across
   test runs once tests started exercising per-project workflow selections.
+- **`pm_create_task` failed with `db_error` on every call that left `sprint_id`
+  unset** (Task PMCP-518), i.e. the ordinary "create in the backlog" case.
+  pm 0.33.5 made `pm_task.sprint_id` `NOT NULL DEFAULT 0` — 0 is now the only
+  representation of "no sprint," matching `pmSprint::unassignTask()`,
+  `pmSprint::delete()`, `pmSprint::complete()`'s own fallback, and the
+  backlog filter in `pmTaskModel::getByStatus()`. The plugin still wrote PHP
+  `null` for an unset sprint, same as it does for the genuinely nullable
+  `assignee_contact_id`/`milestone_id`. On MySQL 8 in strict mode that comes
+  out the other side as SQL `1366 Incorrect integer value: ''`:
+  `waModel::castValue()` has no branch for the unparenthesised `int unsigned`
+  type `DESCRIBE` reports for a `NOT NULL` column, so it falls into the
+  default (string) case instead of writing `NULL`. `safeExecute()` catches
+  `waDbException` and reports a generic `db_error` with no column name, which
+  is why this surfaced from a production log rather than from the tool's own
+  error message. `pm_create_task` and `pm_update_task` now write `0` for an
+  omitted/cleared `sprint_id`, the two genuinely nullable
+  `assignee_contact_id`/`milestone_id` fields untouched. Two further paths
+  hit the same 1366 and are fixed the same way: `pm_update_task` moving a
+  task to the backlog (`sprint_id: 0`), and `pm_manage_sprint`'s `complete`
+  action with `move_unfinished` on and `auto_create_next` off, which returned
+  `db_error` *after* the sprint had already been completed. That last one
+  also removes `pmMcpSprintHelper::fixOrphanedByCoreBug()` — a workaround for
+  a pm bug that no longer exists now that `pmSprint::complete()` itself
+  defaults its "next sprint" target to `0`; the workaround had started
+  actively overwriting a correct `sprint_id = 0` back to `NULL`, corrupting
+  the one path pm now gets right on its own. The `app.pm` requirement is
+  raised from `>=0.33.1` to `>=0.50.0`, the version this fix was developed
+  and tested against — the 0.33.1 pin allowed the plugin to install against a
+  pm version whose `sprint_id` column shape it could not actually get right.
 
 ## [1.4.0] - 2026-08-07
 

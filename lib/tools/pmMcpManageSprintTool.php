@@ -136,14 +136,10 @@ class pmMcpManageSprintTool extends pmMcpToolBase
 
         $moved_unfinished = null;
         if ($move_unfinished) {
-            if (!$new_sprint) {
-                // Work around a pm core bug: complete()'s raw UPDATE binds a
-                // null "next sprint" target through the integer placeholder,
-                // which casts to 0 instead of SQL NULL, so these tasks would
-                // otherwise be neither in this sprint nor in the backlog.
-                // See pmMcpSprintHelper::fixOrphanedByCoreBug().
-                pmMcpSprintHelper::fixOrphanedByCoreBug($unfinished_ids);
-            }
+            // complete()'s move_unfinished step lands these tasks on
+            // sprint_id = 0 (the backlog) when there is no next sprint —
+            // pm_task.sprint_id is NOT NULL DEFAULT 0 since pm 0.33.5, so
+            // that is the correct terminal state, not a fix-up target.
             $moved_unfinished = array(
                 'task_count'       => count($unfinished_ids),
                 // Explicit "backlog" rather than a bare null target_sprint_id,

@@ -518,38 +518,4 @@ class pmMcpSprintHelper
         ));
     }
 
-    /**
-     * Work around a bug in pmSprint::complete()'s move_unfinished step: its
-     * "UPDATE pm_task SET sprint_id = i:target ..." binds $target through the
-     * 'i' (integer) placeholder type, which casts PHP null to 0 rather than
-     * emitting SQL NULL (waDbStatement::getQuery(), case 'i': `(int) $value`).
-     * When there is no next sprint to move tasks into, every task named in
-     * $task_ids ends up with sprint_id = 0 instead of NULL — invisible both
-     * from its old sprint and from the true backlog, since every other pm
-     * query for "no sprint" checks `sprint_id IS NULL` (e.g.
-     * pmTaskModel::getByStatus()'s sprint_id=-1 filter). This does not go
-     * through the same raw-SQL path — updateById() resolves the column's
-     * nullability and writes SQL NULL correctly — so it is safe to use as the
-     * fix-up.
-     *
-     * Only touches tasks pm_manage_sprint itself just asked complete() to
-     * move (captured via openTaskIdsIn() beforehand), so it never reaches a
-     * task with a legitimate sprint_id = 0 from anything else.
-     *
-     * @param int[] $task_ids  From openTaskIdsIn(), captured before calling pmSprint::complete().
-     */
-    public static function fixOrphanedByCoreBug(array $task_ids)
-    {
-        if (!$task_ids) {
-            return;
-        }
-        $task_model = new pmTaskModel();
-        $orphaned = $task_model->query(
-            "SELECT id FROM pm_task WHERE id IN (i:ids) AND sprint_id = 0",
-            array('ids' => $task_ids)
-        )->fetchAll('id');
-        foreach (array_keys($orphaned) as $task_id) {
-            $task_model->updateById((int) $task_id, array('sprint_id' => null));
-        }
-    }
 }

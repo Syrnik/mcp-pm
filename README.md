@@ -15,8 +15,9 @@ project wiki through the MCP JSON-RPC protocol.
   (`registerTools`), `mcp_plugin_rights_v1` (`registerRights`) and
   `mcp_skill_registry_v1` (`registerSkills`).
 - `lib/config/requirements.php` — requires `app.mcp >= 1.2.0` (the release that
-  introduced the skill registry) and `app.pm >= 0.33.1` (the version the
-  sprint tools were developed and tested against; the underlying API —
+  introduced the skill registry) and `app.pm >= 0.50.0` (the version this
+  plugin is developed and tested against; `pm_task.sprint_id` became
+  `NOT NULL DEFAULT 0` in 0.33.5, and the cross-project sprint API —
   `pmSprint::canEdit(array)` and the 4-argument `pmSprint::save()` — first
   appeared in 0.26.0).
 - `skills/*.md` — the agent-facing documentation published through the skill

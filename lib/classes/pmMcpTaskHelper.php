@@ -431,6 +431,10 @@ class pmMcpTaskHelper
             'type_slug'           => $t['type_slug'] ?? null,
             'assignee_contact_id' => !empty($t['assignee_contact_id']) ? (int) $t['assignee_contact_id'] : null,
             'milestone_id'        => !empty($t['milestone_id']) ? (int) $t['milestone_id'] : null,
+            // pm_task.sprint_id is NOT NULL DEFAULT 0 (pm 0.33.5+): 0 in the
+            // row means "no sprint" and is surfaced as null here, same as the
+            // genuinely nullable FKs above — the tool contract does not
+            // distinguish "column is 0" from "column is NULL".
             'sprint_id'           => !empty($t['sprint_id']) ? (int) $t['sprint_id'] : null,
             'start_date'          => $t['start_date'] ?? null,
             'due_date'            => $t['due_date'] ?? null,

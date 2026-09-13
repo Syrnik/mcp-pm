@@ -6,8 +6,11 @@
  * references, logs changes and notifies). Status changes go through
  * pm_move_task, not here. Returns the updated task card.
  *
- * Nullable references (assignee_contact_id, milestone_id, sprint_id, parent_id)
- * accept 0 to clear the field (unassign / backlog / no milestone / detach).
+ * Nullable references (assignee_contact_id, milestone_id, parent_id) accept 0
+ * to clear the field (unassign / no milestone / detach) and are written as
+ * SQL NULL. sprint_id is the odd one out since pm 0.33.5: pm_task.sprint_id
+ * is NOT NULL DEFAULT 0, so 0 (backlog) is written as the plain integer, not
+ * as null — see the cast below.
  *
  * `tags` is the odd one out: pmTask::save() knows nothing about tags, so they
  * are written separately, gated on task.edit and replacing the whole set — an
@@ -69,11 +72,17 @@ class pmMcpUpdateTaskTool extends pmMcpToolBase
                 }
             }
             // Nullable foreign keys: 0 clears (save() writes NULL for null values).
-            foreach (array('assignee_contact_id', 'milestone_id', 'sprint_id') as $f) {
+            foreach (array('assignee_contact_id', 'milestone_id') as $f) {
                 if (array_key_exists($f, $arguments) && $arguments[$f] !== '') {
                     $v = (int) $arguments[$f];
                     $data[$f] = $v > 0 ? $v : null;
                 }
+            }
+            // sprint_id: NOT NULL DEFAULT 0 since pm 0.33.5 — 0 is the
+            // backlog and must reach save() as a plain int, never null
+            // (PMCP-518; see pm_create_task for the failure mode).
+            if (array_key_exists('sprint_id', $arguments) && $arguments['sprint_id'] !== '') {
+                $data['sprint_id'] = max(0, (int) $arguments['sprint_id']);
             }
             // The parent may be quoted as a full number, so it cannot go
             // through the plain (int) cast above — that would read "AUTH-31"

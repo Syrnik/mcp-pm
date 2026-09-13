@@ -6,7 +6,7 @@
  * addressed by project membership rather than owned by a single project: omit
  * project_id to see every sprint you can access (a cross-project sprint is
  * listed once), or pass it to restrict to sprints linked to one project. The
- * backlog (tasks with sprint_id IS NULL) is not a sprint and is reached
+ * backlog (tasks with sprint_id = 0) is not a sprint and is reached
  * through pm_list_tasks (sprint_id = -1).
  */
 class pmMcpListSprintsTool extends pmMcpToolBase

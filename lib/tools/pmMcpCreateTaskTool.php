@@ -103,10 +103,18 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                     $data[$f] = $v;
                 }
             }
-            foreach (array('assignee_contact_id', 'milestone_id', 'sprint_id') as $f) {
+            foreach (array('assignee_contact_id', 'milestone_id') as $f) {
                 $v = $this->argInt($arguments, $f);
                 $data[$f] = $v > 0 ? $v : null;
             }
+            // sprint_id is NOT NULL DEFAULT 0 since pm 0.33.5 (migration
+            // 1786112356: "sprint_id 0 = no sprint, NULL no longer used") — 0
+            // is the backlog, not the two genuinely nullable FKs above. A PHP
+            // null here would hit pm_task's NOT NULL INT UNSIGNED column;
+            // waModel::castValue() has no branch for the unparenthesised
+            // "int unsigned" type DESCRIBE reports, falls through to the
+            // default case and writes '' — 1366 in strict mode (PMCP-518).
+            $data['sprint_id'] = max(0, $this->argInt($arguments, 'sprint_id'));
             // The parent may be quoted as a full number; resolving it here also
             // rejects a parent the caller cannot see before pmTask::create()
             // does its own same-project check.

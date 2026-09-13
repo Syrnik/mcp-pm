@@ -400,6 +400,74 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $this->assertNull($r['task']['assignee_contact_id']);
     }
 
+    /**
+     * PMCP-518: pm_task.sprint_id became NOT NULL DEFAULT 0 in pm 0.33.5 (0 =
+     * backlog, NULL no longer used — migration 1786112356). Before this fix,
+     * pm_create_task wrote PHP null for an omitted sprint_id, which
+     * waModel::castValue() turned into '' for the NOT NULL int unsigned
+     * column, and the INSERT failed with a 1366 db_error — the ordinary
+     * "create in the backlog" case could not create a task at all.
+     *
+     * type_slug is passed explicitly because pm now requires it
+     * unconditionally on every pmTask::create()/save() call
+     * (pmTask.class.php:235) regardless of what the caller omits — a
+     * separate, pre-existing regression outside this test's scope.
+     */
+    public function testCreateTaskWithoutSprintGoesToBacklog(): void
+    {
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ No sprint',
+            'type_slug'  => 'task',
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertNull($r['task']['sprint_id']);
+
+        // The tool's response maps both 0 and NULL to null (formatTaskRow's
+        // !empty() check) — read the raw row to confirm what actually landed
+        // in the NOT NULL column, not just what the tool reports back.
+        $row = (new pmTaskModel())->getById($r['task_id']);
+        $this->assertSame(0, (int) $row['sprint_id']);
+    }
+
+    /** Same failure mode, reached through pm_update_task moving a task to the backlog. */
+    public function testUpdateTaskSprintZeroMovesToBacklog(): void
+    {
+        $sprint_model = new pmSprintModel();
+        $sprint_id = (int) $sprint_model->insert(array(
+            'name'     => 'ZZ Backlog Move Sprint',
+            'status'   => 'planned',
+            'duration' => 1,
+            'sort'     => 1,
+        ));
+        (new pmSprintProjectModel())->insert(array(
+            'sprint_id'  => $sprint_id,
+            'project_id' => $this->project_id,
+        ));
+
+        $created = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ In sprint',
+            'type_slug'  => 'task',
+            'sprint_id'  => $sprint_id,
+        ));
+        $this->assertTrue($created['ok'], json_encode($created));
+        $this->assertSame($sprint_id, $created['task']['sprint_id']);
+
+        $u = $this->callTool(new pmMcpUpdateTaskTool(), array(
+            'task_id'   => $created['task_id'],
+            'sprint_id' => 0,
+        ));
+        $this->assertTrue($u['ok'], json_encode($u));
+        $this->assertNull($u['task']['sprint_id']);
+
+        $row = (new pmTaskModel())->getById($created['task_id']);
+        $this->assertSame(0, (int) $row['sprint_id']);
+
+        $sprint_model->deleteById($sprint_id);
+        (new pmSprintProjectModel())->deleteByField('sprint_id', $sprint_id);
+    }
+
     public function testDeleteTaskRequiresConfirm(): void
     {
         $created = $this->makeTask();

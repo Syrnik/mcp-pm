@@ -298,8 +298,10 @@ class pmMcpSprintWriteToolsTest extends pmMcpIntegrationTestCase
         $this->assertNull($r['moved_unfinished']['target_sprint_id']);
         $this->assertGreaterThanOrEqual(1, $r['moved_unfinished']['task_count']);
 
+        // pm_task.sprint_id is NOT NULL DEFAULT 0 (pm 0.33.5+): a task moved
+        // to the backlog lands on 0 in the row, not NULL (PMCP-518).
         $task = (new pmTaskModel())->getById($task_id);
-        $this->assertNull($task['sprint_id']);
+        $this->assertSame(0, (int) $task['sprint_id']);
 
         $stored = (new pmSprintModel())->getById($sprint_id);
         $this->assertSame('completed', $stored['status']);
@@ -343,6 +345,8 @@ class pmMcpSprintWriteToolsTest extends pmMcpIntegrationTestCase
         $this->assertNull((new pmSprintModel())->getById($sprint_id));
         $task = (new pmTaskModel())->getById($task_id);
         $this->assertNotEmpty($task, 'the task itself is not deleted');
-        $this->assertNull($task['sprint_id']);
+        // pm_task.sprint_id is NOT NULL DEFAULT 0 (pm 0.33.5+): a detached
+        // task lands on 0 in the row, not NULL (PMCP-518).
+        $this->assertSame(0, (int) $task['sprint_id']);
     }
 }

@@ -14,15 +14,21 @@ return array(
         'version' => '>=1.2.0',
         'strict'  => true,
     ),
-    // The cross-project sprint API the sprint tools rely on — pmSprint::canEdit
-    // (array $project_ids) (any-of over the projects) and the 4-argument
+    // pm_task.sprint_id became NOT NULL DEFAULT 0 in 0.33.5 (migration
+    // 1786112356: "0 = no sprint, NULL no longer used") — pm_create_task and
+    // pm_update_task rely on that column shape and write 0, never null, for
+    // the backlog (PMCP-518). The cross-project sprint API the sprint tools
+    // rely on — pmSprint::canEdit(array $project_ids) (any-of over the
+    // projects) and the 4-argument
     // pmSprint::save($data, $project_ids, $workflow_items, $fill_status_ids) —
-    // first appeared in 0.26.0, but the requirement is pinned to 0.33.1, the
-    // version the sprint tools were developed and tested against. On an older
-    // pm the sprint write tools would fatal immediately, so the requirement is
-    // strict rather than advisory.
+    // first appeared in 0.26.0, but the requirement is pinned to 0.50.0, the
+    // version this plugin is developed and tested against. On an older pm
+    // either the sprint write tools would fatal immediately, or a task
+    // created without a sprint would land on a nullable column and go
+    // invisible to pm's own IS NULL-based backlog queries, so the
+    // requirement is strict rather than advisory.
     'app.pm'  => array(
-        'version' => '>=0.33.1',
+        'version' => '>=0.50.0',
         'strict'  => true,
     ),
     'php'     => array(
