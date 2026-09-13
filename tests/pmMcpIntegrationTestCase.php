@@ -80,6 +80,7 @@ abstract class pmMcpIntegrationTestCase extends TestCase
         foreach ((new pmSprintModel())->getByProject($pid) as $s) {
             (new pmSprintProjectModel())->deleteByField('sprint_id', $s['id']);
             (new pmSprintFillStatusModel())->deleteByField('sprint_id', $s['id']);
+            (new pmSprintWorkflowModel())->deleteByField('sprint_id', $s['id']);
             (new pmSprintModel())->deleteById($s['id']);
         }
         (new pmMilestoneModel())->deleteByField('project_id', $pid);
@@ -94,6 +95,50 @@ abstract class pmMcpIntegrationTestCase extends TestCase
     {
         $wfs = (new pmProjectModel())->getWorkflows($this->project_id);
         return $wfs ? reset($wfs) : null;
+    }
+
+    /**
+     * A type_slug valid for a project's (first) workflow — pm rejects every
+     * task with none (PMCP-555), so tests that do not care which type a task
+     * gets still need to pass one.
+     */
+    protected function defaultTypeSlug($project_id = null)
+    {
+        $project_id = $project_id ?? $this->project_id;
+        $wfs = (new pmProjectModel())->getWorkflows((int) $project_id);
+        $wf = $wfs ? pmWorkflow::getWorkflow((string) reset($wfs)) : null;
+        $group = !empty($wf['type_group']) ? pmTypeConfig::getGroup($wf['type_group']) : null;
+        $types = array_values($group['types'] ?? pmTypeConfig::getAllTypes());
+        return $types ? (string) $types[0]['slug'] : 'task';
+    }
+
+    /**
+     * Create a sprint directly through the model and attach it to the given
+     * projects (plus, optionally, per-project workflow selections and
+     * auto-fill statuses) the same way pmSprint::save() would. Torn down by
+     * dropProject() through whichever project cleans up first.
+     *
+     * @param array $data            pm_sprint columns (name/status/start_date/...).
+     * @param int[] $project_ids     Projects to link. Defaults to $this->project_id.
+     * @param array $workflow_items  Flat list of ['project_id'=>int,'workflow_id'=>string].
+     * @param int[] $fill_status_ids
+     * @return int Sprint id.
+     */
+    protected function makeSprint(array $data, array $project_ids = array(), array $workflow_items = array(), array $fill_status_ids = array())
+    {
+        if (!$project_ids) {
+            $project_ids = array($this->project_id);
+        }
+        $model = new pmSprintModel();
+        $id = (int) $model->insert($data);
+        $model->saveProjects($id, $project_ids);
+        if ($workflow_items) {
+            $model->saveWorkflows($id, $workflow_items);
+        }
+        if ($fill_status_ids) {
+            $model->saveFillStatuses($id, $fill_status_ids);
+        }
+        return $id;
     }
 
     /** Invoke a tool and return its decoded array response. */

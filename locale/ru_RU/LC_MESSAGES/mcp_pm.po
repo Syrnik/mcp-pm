@@ -605,3 +605,156 @@ msgstr "Комментарий не найден на этой задаче."
 
 msgid "You can only edit your own comments."
 msgstr "Редактировать можно только свои комментарии."
+
+msgid "Create sprint"
+msgstr "Создать спринт"
+
+msgid "Create a sprint spanning one or more projects, with its workflow subset and auto-fill statuses (requires the sprint.edit permission)."
+msgstr "Создаёт спринт на один или несколько проектов, с набором воркфлоу и статусами автозаполнения (требует права sprint.edit)."
+
+msgid "Update sprint"
+msgstr "Изменить спринт"
+
+msgid "Update a sprint's name, goal, dates, projects, workflows and automation (requires the sprint.edit permission)."
+msgstr "Обновляет название, цель, даты, проекты, воркфлоу и настройки автоматизации спринта (требует права sprint.edit)."
+
+msgid "Manage sprint lifecycle"
+msgstr "Управление жизненным циклом спринта"
+
+msgid "Activate, complete or delete a sprint (requires the sprint.edit permission; delete requires confirm)."
+msgstr "Запускает, завершает или удаляет спринт (требует права sprint.edit; удаление требует подтверждения)."
+
+msgid "Sprints"
+msgstr "Спринты"
+
+msgid "Create a sprint spanning one or more projects, with a per-project workflow subset and auto-fill statuses. Always created \"planned\" — use pm_manage_sprint to activate it. Requires the sprint.edit permission in at least one project and membership in every project listed. Returns the created sprint card."
+msgstr "Создаёт спринт на один или несколько проектов, с набором воркфлоу по каждому проекту и статусами автозаполнения. Новый спринт всегда получает статус «запланирован» — для запуска используйте pm_manage_sprint. Требует права sprint.edit хотя бы в одном проекте и членства во всех перечисленных проектах. Возвращает карточку созданного спринта."
+
+msgid "At least one project is required."
+msgstr "Нужно указать хотя бы один проект."
+
+msgid "Update a sprint's name, goal, dates, project set, workflow selection or auto-fill statuses. Only supplied fields change. project_ids/workflows/fill_status_ids are each a replacement set for the key you pass — omit the key to keep the current value; projects you cannot access are never removed. Status is not settable here — use pm_manage_sprint to activate, complete or delete. Requires the sprint.edit permission. Returns the updated sprint card."
+msgstr "Обновляет название, цель, даты, состав проектов, выбор воркфлоу или статусы автозаполнения спринта. Меняются только переданные поля. project_ids/workflows/fill_status_ids каждый раз задаются как полный набор — не передавайте ключ, чтобы оставить текущее значение; проекты, к которым у вас нет доступа, никогда не отвязываются. Статус здесь не меняется — для активации, завершения и удаления используйте pm_manage_sprint. Требует права sprint.edit. Возвращает обновлённую карточку спринта."
+
+msgid "project_ids must be a non-empty list. Omit the key entirely to keep the current set."
+msgstr "project_ids должен быть непустым списком. Чтобы сохранить текущий набор, не передавайте этот ключ вовсе."
+
+msgid "workflows must be a list of {project_id, workflow_ids} objects."
+msgstr "workflows должен быть списком объектов {project_id, workflow_ids}."
+
+msgid "Workflow \"%1$s\" is not attached to project %2$d."
+msgstr "Воркфлоу «%1$s» не подключён к проекту %2$d."
+
+msgid "Status %d cannot be used for auto-fill: it does not belong to the selected workflows."
+msgstr "Статус %d нельзя использовать для автозаполнения: он не входит в выбранные воркфлоу."
+
+msgid "Sprint name cannot be empty."
+msgstr "Название спринта не может быть пустым."
+
+msgid "%d task(s) are still attached to this sprint but their project is no longer part of it, so they no longer appear on the sprint board. Move them with pm_update_task (sprint_id: 0) or re-add the project."
+msgstr "%d задач(и) всё ещё привязаны к этому спринту, но их проект больше не входит в его состав, поэтому на доске спринта они не отображаются. Перенесите их через pm_update_task (sprint_id: 0) или верните проект в состав спринта."
+
+msgid "Some of this sprint's auto-fill statuses no longer belong to its (possibly narrower) workflow selection. They were kept as-is; pass fill_status_ids explicitly to clean them up."
+msgstr "Часть статусов автозаполнения этого спринта больше не входит в его (возможно, сузившийся) выбор воркфлоу. Они оставлены без изменений — передайте fill_status_ids явно, чтобы их убрать."
+
+msgid "Activate, complete or delete a sprint. activate: planned -> active, optionally pulling in backlog tasks (auto_fill). complete: active -> completed, renames the sprint with its date range and applies auto_create_next / move_unfinished. delete: removes the sprint and detaches (does not delete) its tasks — requires confirm. Requires the sprint.edit permission."
+msgstr "Запускает, завершает или удаляет спринт. activate: «запланирован» → «активен», при необходимости подтягивает задачи из бэклога (auto_fill). complete: «активен» → «завершён», переименовывает спринт с указанием диапазона дат и применяет auto_create_next / move_unfinished. delete: удаляет спринт и отвязывает (но не удаляет) его задачи — требует подтверждения. Требует права sprint.edit."
+
+msgid "Unknown action \"%s\"."
+msgstr "Неизвестное действие «%s»."
+
+msgid "Only planned sprints can be activated."
+msgstr "Запустить можно только запланированный спринт."
+
+msgid "Auto-fill stopped at its 500-task limit; more matching backlog tasks may remain unassigned."
+msgstr "Автозаполнение остановилось на пределе в 500 задач; в бэклоге могут остаться ещё подходящие задачи."
+
+msgid "Only active sprints can be completed."
+msgstr "Завершить можно только активный спринт."
+
+msgid "The sprint was not completed."
+msgstr "Спринт не был завершён."
+
+msgid "You are not a member of any of this sprint's projects."
+msgstr "Вы не участник ни одного из проектов этого спринта."
+
+msgid "You need the sprint.edit permission in at least one of these projects."
+msgstr "Нужно право sprint.edit хотя бы в одном из этих проектов."
+
+msgid "Sprint name is required."
+msgstr "Название спринта обязательно."
+
+msgid "List sprints you can access (active first, then planned, then completed) with automation settings. Omit project_id to span every project you can access; a sprint spanning several projects is returned once. Projects you cannot access are stripped from project_ids/workflows on each row — hidden_project_count and access_narrowed flag when that happened. Paginated. Backlog tasks are listed via pm_list_tasks with sprint_id=-1."
+msgstr "Список доступных вам спринтов (сначала активные, затем запланированные, затем завершённые) с настройками автоматизации. Без project_id — по всем доступным проектам; межпроектный спринт выводится один раз. Проекты, к которым у вас нет доступа, вырезаются из project_ids/workflows каждой строки — на это указывают hidden_project_count и access_narrowed. С пагинацией. Задачи бэклога выводятся через pm_list_tasks с sprint_id=-1."
+
+msgid "Get a sprint card: projects, per-project workflow selection, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in at least one of the sprint's projects; projects you cannot access are hidden from the card (see hidden_project_count)."
+msgstr "Возвращает карточку спринта: проекты, выбор воркфлоу по каждому проекту, статусы автозаполнения и настройки автоматизации (auto-create-next, auto-close, move-unfinished, auto-fill). Требует членства хотя бы в одном из проектов спринта; проекты, к которым у вас нет доступа, скрыты из карточки (см. hidden_project_count)."
+
+msgid "None of the listed projects has a workflow attached, so there are no statuses to auto-fill from. Attach a workflow to the project first."
+msgstr "Ни к одному из перечисленных проектов не подключён воркфлоу, поэтому статусов для автозаполнения нет. Сначала подключите воркфлоу к проекту."
+
+msgid "Unknown app_id \"%s\". Use one of: %s."
+msgstr "Неизвестный app_id «%s». Используйте одно из значений: %s."
+
+msgid "The %s app is not installed; a link to it cannot be created."
+msgstr "Приложение %s не установлено; связь с ним создать нельзя."
+
+msgid "Link a task to a record in another integrated app (helpdesk request, crm deal, shop order) or remove that link. Requires the task.edit permission. Returns the task's external links after the change."
+msgstr "Связывает задачу с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина) или снимает эту связь. Требует права task.edit. Возвращает внешние связи задачи после изменения."
+
+msgid "You do not have permission to edit this task's external links."
+msgstr "У вас нет права редактировать внешние связи этой задачи."
+
+msgid "external_id must be a positive integer id."
+msgstr "external_id должен быть положительным целочисленным идентификатором."
+
+msgid "No %1$s record with id %2$s was found; the link was not created."
+msgstr "Запись %1$s с id %2$s не найдена; связь не создана."
+
+msgid "That link does not exist on this task."
+msgstr "Такой связи у этой задачи нет."
+
+msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see."
+msgstr "Ищет задачи pm, связанные с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина). Возвращает только задачи из доступных вам проектов; hidden_count сообщает, сколько ещё найдено в проектах, которые вы не видите."
+
+msgid "external_id is required."
+msgstr "external_id обязателен."
+
+msgid "Find tasks by external link"
+msgstr "Найти задачи по внешней связи"
+
+msgid "Find tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order), filtered to projects you can access."
+msgstr "Находит задачи, связанные с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина), в пределах доступных вам проектов."
+
+msgid "Manage external links"
+msgstr "Управление внешними связями"
+
+msgid "Link a task to a record in another integrated app (helpdesk request, crm deal, shop order), or remove that link (requires the task.edit permission)."
+msgstr "Связывает задачу с записью в другом интегрированном приложении (запрос helpdesk, сделка crm, заказ магазина) или снимает эту связь (требует права task.edit)."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr "Создаёт задачу в проекте. Требует членства в проекте с правом task.create. workflow_id обязателен, если у проекта не ровно один воркфлоу; исполнитель, веха и спринт необязательны — не указывайте их (или передайте 0), чтобы оставить пустыми. Теги можно задать тем же вызовом через поле tags, а связи с helpdesk/crm/shop-записями — через external_links. Возвращает карточку созданной задачи."
+
+msgid "external_links[%d] must be an object with app_id and external_id."
+msgstr "external_links[%d] должен быть объектом с app_id и external_id."
+
+msgid "external_links[%1$d].app_id \"%2$s\" is not one of: %3$s."
+msgstr "external_links[%1$d].app_id «%2$s» не входит в список: %3$s."
+
+msgid "external_links[%d].external_id must be a positive integer id."
+msgstr "external_links[%d].external_id должен быть положительным целочисленным идентификатором."
+
+msgid "external_links[%1$d]: no %2$s record with id %3$s was found; the task was not created."
+msgstr "external_links[%1$d]: запись %2$s с id %3$s не найдена; задача не создана."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug is required unless the workflow's type group has exactly one type (pm rejects every task with no type); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr "Создаёт задачу в проекте. Требует членства в проекте с правом task.create. workflow_id обязателен, если у проекта не ровно один воркфлоу; type_slug обязателен, если в группе типов воркфлоу не ровно один тип (pm отвергает любую задачу без типа); исполнитель, веха и спринт необязательны — не указывайте их (или передайте 0), чтобы оставить пустыми. Теги можно задать тем же вызовом через поле tags, а связи с helpdesk/crm/shop-записями — через external_links. Возвращает карточку созданной задачи."
+
+msgid "type_slug is required (more than one task type is available); see available_types."
+msgstr "type_slug обязателен (доступно более одного типа задачи); см. available_types."
+
+msgid "type_slug \"%s\" is not valid for this workflow; see available_types."
+msgstr "type_slug «%s» недопустим для этого воркфлоу; см. available_types."
+
+msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see, and stale_link_count how many link rows point at a task that no longer exists. The linked record's own name is only included once you can see at least one linked task."
+msgstr "Находит задачи pm, связанные с записью другого интегрированного приложения (заявка helpdesk, сделка crm, заказ shop). Возвращает только задачи из доступных вам проектов; hidden_count показывает, сколько ещё существует в недоступных проектах, а stale_link_count — сколько строк связи указывает на уже удалённую задачу. Название самой связанной записи включается только если вам видна хотя бы одна связанная задача."

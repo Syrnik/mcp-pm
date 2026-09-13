@@ -35,7 +35,7 @@ The codes you will meet:
 
 | `error_code`       | Means                                                        | What to do |
 |--------------------|--------------------------------------------------------------|------------|
-| `invalid_param`    | An argument is missing, malformed or points somewhere else    | Read the extra keys — a mismatch often ships the valid options (`available_workflows`, `available_milestones`, `available_sprints`, `available_participants`, `available_roles`) |
+| `invalid_param`    | An argument is missing, malformed or points somewhere else    | Read the extra keys — a mismatch often ships the valid options (`available_workflows`, `available_milestones`, `available_sprints`, `available_fill_status_ids`, `available_participants`, `available_roles`) |
 | `not_found`        | The project/task/page/sprint does not exist, or is invisible to you | Re-discover the id; do not retry the same one |
 | `access_denied`    | Your project role lacks the permission, or you are not a member | Stop; ask a human. Retrying will not help |
 | `confirm_required` | A destructive tool was called without `confirm: true`         | Confirm with the user, then repeat with `confirm: true` |
@@ -54,7 +54,9 @@ reseeded. Always resolve by name through a `list_*` tool first:
 pm_list_projects            → project_id
 pm_get_project              → participants, workflows, milestones in one call
 pm_list_statuses            → status ids (+ a workflow's transition matrix)
-pm_list_tags / pm_list_milestones / pm_list_sprints
+pm_list_tags / pm_list_milestones
+pm_list_sprints (project_id optional — omit to span every project you can access)
+   → pm_get_sprint for one sprint's full card (projects, per-project workflows, automation)
 ```
 
 The one exception is **tags on a task**: those are written by name, not by id
@@ -102,11 +104,13 @@ Update tools are partial: a key you do not send is not touched.
 
 ## Destructive tools need `confirm: true`
 
-`pm_delete_task` and `pm_remove_project_user` refuse to run without
-`confirm: true` and answer `confirm_required`. That guard exists so the
-confirmation is a deliberate act — get the human's agreement first, then send
-it. `pm_delete_task` also removes the task's subtasks, comments, tags and
-custom fields, and cannot be undone.
+`pm_delete_task`, `pm_remove_project_user` and `pm_manage_sprint` with
+`action: "delete"` refuse to run without `confirm: true` and answer
+`confirm_required`. That guard exists so the confirmation is a deliberate
+act — get the human's agreement first, then send it. `pm_delete_task` also
+removes the task's subtasks, comments, tags and custom fields, and cannot be
+undone. Deleting a sprint is gentler: it detaches its tasks (clears their
+`sprint_id`) rather than deleting them.
 
 ## Dates, text and formatting
 

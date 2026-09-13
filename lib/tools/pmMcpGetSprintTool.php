@@ -1,14 +1,17 @@
 <?php
 
 /**
- * pm_get_sprint — a sprint card: its project(s), auto-fill source statuses and
- * automation settings. Access requires membership in the sprint's project.
+ * pm_get_sprint — a sprint card: its project(s), per-project workflow
+ * selection, auto-fill source statuses and automation settings. A sprint can
+ * span several projects; access requires membership in at least one of them.
+ * Projects you are not a member of are stripped from project_ids/workflows —
+ * hidden_project_count says how many were hidden.
  */
 class pmMcpGetSprintTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_get_sprint'; }
     public function getRight()       { return 'pm_get_sprint'; }
-    public function getDescription() { return _wp('Get a sprint card: project, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in the sprint\'s project.'); }
+    public function getDescription() { return _wp('Get a sprint card: projects, per-project workflow selection, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in at least one of the sprint\'s projects; projects you cannot access are hidden from the card (see hidden_project_count).'); }
 
     public function getInputSchema()
     {
@@ -30,20 +33,20 @@ class pmMcpGetSprintTool extends pmMcpToolBase
                 return $this->softFail('not_found', _wp('Sprint not found.'));
             }
 
-            // A sprint belongs to a project; the user must be able to access it.
-            // accessibleProjectIds() === null means app-admin (no restriction).
+            // A sprint belongs to one or more projects; the user must be able
+            // to access at least one. accessibleProjectIds() === null means
+            // app-admin (no restriction).
             $accessible = pmMcpProjectHelper::accessibleProjectIds();
             $project_ids = array_map('intval', $sprint['project_ids'] ?? array());
-            if ($accessible !== null) {
-                $shared = array_intersect($project_ids, $accessible);
-                if (!$shared) {
-                    return $this->softFail('access_denied', _wp('You are not a member of this sprint\'s project.'));
-                }
+            if ($accessible !== null && !array_intersect($project_ids, $accessible)) {
+                return $this->softFail('access_denied', _wp('You are not a member of any of this sprint\'s projects.'));
             }
 
-            return $this->ok(array(
-                'sprint' => pmMcpSprintHelper::formatSprintCard($sprint),
-            ));
+            $sprint = pmMcpSprintHelper::narrowToAccessible($sprint, $accessible);
+            $card = pmMcpSprintHelper::formatSprintCard($sprint);
+            $card['can_edit'] = pmSprint::canEdit($this->getUserId(), $project_ids);
+
+            return $this->ok(array('sprint' => $card));
         });
     }
 }

@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 class pmMcpSmokeTest extends TestCase
 {
-    private const EXPECTED_TOOL_COUNT = 32;
+    private const EXPECTED_TOOL_COUNT = 37;
 
     private function plugin(): mcpPmPlugin
     {
@@ -51,6 +51,7 @@ class pmMcpSmokeTest extends TestCase
             'pmMcpWorkflowHelper',
             'pmMcpWikiHelper',
             'pmMcpSprintHelper',
+            'pmMcpExternalHelper',
         ) as $class) {
             $this->assertTrue(class_exists($class), "$class must autoload");
         }
@@ -103,8 +104,8 @@ class pmMcpSmokeTest extends TestCase
             $this->assertContains($tool->getName(), $right_names, "tool '{$tool->getName()}' must have a registered right");
         }
 
-        // The four documented right groups are present.
-        foreach (array('pm.read', 'pm.tasks', 'pm.projects', 'pm.wiki') as $group) {
+        // The five documented right groups are present.
+        foreach (array('pm.read', 'pm.tasks', 'pm.projects', 'pm.wiki', 'pm.sprints') as $group) {
             $this->assertArrayHasKey($group, $right_groups, "right group '$group' must exist");
         }
     }

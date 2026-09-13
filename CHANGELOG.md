@@ -5,6 +5,150 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-09-14
+
+### Added
+- **Sprints can be written, not just read** (Task PMCP-400). pm's sprints are
+  M:N over projects — a sprint spans one project as often as several, and its
+  workflow subset and auto-fill statuses are chosen per project — but the
+  plugin could only list and read them. Three new tools cover the lifecycle:
+  `pm_create_sprint` (one or more projects, per-project workflow subset,
+  auto-fill statuses; always created `planned`), `pm_update_sprint` (partial
+  update; `project_ids`, `workflows` and `fill_status_ids` are each a
+  *replacement set* for the key you pass — omit the key entirely to keep the
+  current value) and `pm_manage_sprint` (`activate`/`complete`/`delete` in one
+  tool, mirroring the existing `pm_manage_checklist`/`pm_manage_watchers`
+  shape; `delete` requires `confirm`). All three sit in a new `pm.sprints`
+  right group.
+
+  `pmSprint::save()` replaces `project_ids`, `workflows` and
+  `fill_status_ids` as a whole on every call (delete-all-then-reinsert one
+  level down), so a naive partial update would silently wipe whatever it
+  didn't mention. `pm_update_sprint` re-reads the stored sprint and re-supplies
+  every relation array you didn't pass, and never lets a project you cannot
+  access be dropped from the set even if your `project_ids` omits it —
+  closing a real hole in pm's own `saveOneAction`, which trusts the posted
+  list alone. `status` is deliberately not settable through `pm_update_sprint`:
+  pm's UI lets it flip status directly, bypassing the activate/complete gates
+  and every side effect (auto-fill, auto-create-next, move-unfinished); use
+  `pm_manage_sprint` instead.
+
+  `pm_manage_sprint`'s `activate` enforces the `planned` status itself —
+  `pmSprint::activate()` has none of its own and would happily re-activate a
+  completed sprint. `complete` judges success by re-reading the sprint's
+  status rather than trusting `pmSprint::complete()`'s return value, which is
+  `null` both on refusal and on an ordinary completion with
+  `auto_create_next` off. It also works around a bug in that same method: its
+  `move_unfinished` step writes the "next sprint" id through a raw SQL
+  integer placeholder, which casts a PHP `null` (no next sprint) to `0`
+  rather than SQL `NULL` — every moved task would end up neither in the old
+  sprint, the new one, nor pm's own backlog (`sprint_id IS NULL`), invisible
+  everywhere. The tool captures the exact task ids before calling `complete()`
+  and, when no next sprint was created, corrects any of them left at
+  `sprint_id = 0` back to `NULL` through the ORM path, which nulls correctly.
+
+- **Links between a task and a helpdesk request, crm deal or shop order**
+  (Task PMCP-410). pm lets you create a task straight from a helpdesk request
+  and see it listed back on that request's page; the plugin had no way to
+  read, create or remove that link. pm stores it as one table shared by all
+  three integrated apps rather than a helpdesk-specific one, so the coverage
+  is generic rather than helpdesk-only: `pm_get_task` gains an
+  `external_links` array, `pm_manage_external_links` adds or removes one link
+  (`app_id`: `helpdesk`/`crm`/`shop`), and `pm_find_tasks_by_external` is the
+  reverse lookup — which tasks are linked to a given request/deal/order.
+  `pm_create_task` also takes an optional `external_links` array, for
+  creating and linking a task in one call, the same way pm's own helpdesk
+  integration seeds the link when a task is opened from a request.
+
+  Three ways this plugin is stricter than pm's own controllers, which write
+  the link table directly and skip every one of these checks: the linked
+  record must actually exist (`not_found` on an id nobody wrote), the write
+  path requires `task.edit` (pm's `externalAdd`/`externalRemove` actions do
+  not check it at all — only the REST API does, which this plugin already
+  mirrors for other tools), and a link whose linked app is not installed or
+  whose record was since deleted is still returned (`exists: false`,
+  `element_name: null`) rather than silently dropped the way pm's own
+  `_doEnrich` drops it — pm has no reverse cascade, so that link would
+  otherwise be invisible and permanently stuck.
+
+  The `pm` setting that toggles the helpdesk integration only gates pm's own
+  UI injection into helpdesk's pages — it does not gate the tools, since
+  `pm`'s own controllers and REST API ignore it too. The read tools report it
+  as `integration_enabled` for information, not as a permission check.
+
+  `pm_find_tasks_by_external`'s project-access filtering also closes a minor
+  disclosure `helpdeskLinkedTasksAction()` has no equivalent for: the linked
+  record's own name is only returned once the caller can see at least one
+  task actually linked to it, so knowing (or guessing) an id is not on its
+  own enough to read another app's record through this tool. `hidden_count`
+  and the new `stale_link_count` (a link row whose task was deleted outside
+  `pm_delete_task`, and so left orphaned) are reported separately, so a
+  `count: 0` result can't be misread as "never linked" when it actually means
+  "linked, but not visible."
+
+### Fixed
+- `pmMcpSprintHelper`'s docblock and `pm_list_sprints`' description both
+  claimed cross-project sprints were "an earlier design that was abandoned"
+  and treated a sprint as belonging to one project. That was never true of
+  the current pm schema (`pm_sprint` carries no `project_id` at all) and
+  contradicted the plugin's own `skills/pm-projects.md`, which already
+  documented sprints correctly. `pm_list_sprints`' `project_id` is now
+  optional (span every project you can access; a cross-project sprint is
+  listed once) and paginated; both read tools now expose the per-project
+  `workflows` selection, which was decorated onto every row by
+  `pmSprintModel` but never surfaced by either tool — an agent had no way to
+  see it before this release, which also made a correct partial update
+  impossible to write. Both tools narrow `project_ids`/`workflows` to the
+  projects you can access (`hidden_project_count`, `access_narrowed`) rather
+  than leaking the id of a project you have no role in; the deprecated
+  `project_id` convenience field is now derived from that narrowed set so it
+  never names a project you cannot see.
+- The integration test base's sprint teardown deleted `pm_sprint_project` and
+  `pm_sprint_fill_status` but not `pm_sprint_workflow`, leaking rows across
+  test runs once tests started exercising per-project workflow selections.
+- **`pm_create_task` failed with `db_error` on every call that left `sprint_id`
+  unset** (Task PMCP-518), i.e. the ordinary "create in the backlog" case.
+  pm 0.33.5 made `pm_task.sprint_id` `NOT NULL DEFAULT 0` — 0 is now the only
+  representation of "no sprint," matching `pmSprint::unassignTask()`,
+  `pmSprint::delete()`, `pmSprint::complete()`'s own fallback, and the
+  backlog filter in `pmTaskModel::getByStatus()`. The plugin still wrote PHP
+  `null` for an unset sprint, same as it does for the genuinely nullable
+  `assignee_contact_id`/`milestone_id`. On MySQL 8 in strict mode that comes
+  out the other side as SQL `1366 Incorrect integer value: ''`:
+  `waModel::castValue()` has no branch for the unparenthesised `int unsigned`
+  type `DESCRIBE` reports for a `NOT NULL` column, so it falls into the
+  default (string) case instead of writing `NULL`. `safeExecute()` catches
+  `waDbException` and reports a generic `db_error` with no column name, which
+  is why this surfaced from a production log rather than from the tool's own
+  error message. `pm_create_task` and `pm_update_task` now write `0` for an
+  omitted/cleared `sprint_id`, the two genuinely nullable
+  `assignee_contact_id`/`milestone_id` fields untouched. Two further paths
+  hit the same 1366 and are fixed the same way: `pm_update_task` moving a
+  task to the backlog (`sprint_id: 0`), and `pm_manage_sprint`'s `complete`
+  action with `move_unfinished` on and `auto_create_next` off, which returned
+  `db_error` *after* the sprint had already been completed. That last one
+  also removes `pmMcpSprintHelper::fixOrphanedByCoreBug()` — a workaround for
+  a pm bug that no longer exists now that `pmSprint::complete()` itself
+  defaults its "next sprint" target to `0`; the workaround had started
+  actively overwriting a correct `sprint_id = 0` back to `NULL`, corrupting
+  the one path pm now gets right on its own. The `app.pm` requirement is
+  raised from `>=0.33.1` to `>=0.50.0`, the version this fix was developed
+  and tested against — the 0.33.1 pin allowed the plugin to install against a
+  pm version whose `sprint_id` column shape it could not actually get right.
+- **`pm_create_task` failed with a bare `app_error` ("Task type is
+  required.") on every call, unless the caller happened to pass a
+  `type_slug`** (Task PMCP-555). pm 0.50.0 made `pmTask::validate()`
+  unconditionally require a non-empty `type_slug` belonging to the
+  workflow's type group, on both create and save; the tool still treated the
+  field as an unchecked optional. `type_slug` is now auto-selected the same
+  way `workflow_id` already is — only when the workflow's type group leaves
+  exactly one candidate — otherwise the tool fails fast with `invalid_param`
+  and `available_types` before any side effect runs, and an explicit value
+  outside that group is rejected the same way instead of reaching
+  `pmTask::create()`. `pm_update_task` needed no change: `pmTask::save()`
+  already falls back to the task's existing `type_slug` when the caller
+  omits it (verified by a new test, since this was flagged unconfirmed).
+
 ## [1.4.0] - 2026-08-07
 
 ### Added

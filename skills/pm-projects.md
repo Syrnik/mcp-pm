@@ -12,13 +12,14 @@ milestones/sprints/tags.
 | Participants | `pm_list_project_users` | `pm_add_project_user`, `pm_remove_project_user` |
 | Workflows / statuses | `pm_get_workflow`, `pm_list_statuses` | — configured in the pm backend only |
 | Milestones | `pm_list_milestones` | — backend only |
-| Sprints | `pm_list_sprints`, `pm_get_sprint` | — backend only; tasks move between sprints via `pm_update_task` |
+| Sprints | `pm_list_sprints`, `pm_get_sprint` | `pm_create_sprint`, `pm_update_sprint`, `pm_manage_sprint` (activate/complete/delete); tasks move between sprints via `pm_update_task` |
 | Tags | `pm_list_tags` | `pm_add_tags`, `pm_remove_tags`, the `tags` field of `pm_create_task` / `pm_update_task` — see [`pm-tasks`](skill://pm/pm-tasks) |
 
-When a human asks for a new milestone or sprint, say it has to be created in
-the Project Management app — do not improvise it as a task or a wiki page.
-Tags are the exception: a tag the project lacks can be created along the way,
-but only when the call says so explicitly (`create_missing_tags`).
+When a human asks for a new milestone, say it has to be created in the
+Project Management app — do not improvise it as a task or a wiki page.
+Sprints and tags are the exceptions: a tag the project lacks can be created
+along the way, but only when the call says so explicitly
+(`create_missing_tags`), and sprints are covered below.
 
 ## Reading a project
 
@@ -95,16 +96,77 @@ assign.
 
 ## Sprints and the backlog
 
-Sprints are read-only here, but you will need their ids constantly.
+A sprint is **not owned by one project** — it can span several
+(`pm_sprint_project` is a many-to-many link), each with its own workflow
+subset. `project_id` on a sprint row is a deprecated convenience alias for
+"the first project *you* can see" — use `project_ids` for the full set, and
+never treat `project_id` as authoritative.
 
-- `pm_list_sprints` takes a `project_id` and an optional `status`, and returns
-  sprints ordered **active first, then planned, then completed** — so the
-  current sprint is normally the first row.
-- `pm_get_sprint` returns one sprint's card: `fill_status_ids` (which statuses
-  auto-fill draws from) and the `automation` flags `auto_create_next`,
-  `auto_close`, `move_unfinished`, `auto_fill`. A sprint can span several
-  projects (`project_ids`); access is granted if you are a member of any of
-  them.
+- `pm_list_sprints` takes an *optional* `project_id` (omit it to span every
+  project you can access — a sprint spanning several is listed once),
+  `status`, and `limit`/`offset`. Sprints come back **active first, then
+  planned, then completed**, so the current sprint is normally the first row.
+- `pm_get_sprint` returns one sprint's card: `project_ids`, the per-project
+  `workflows` (`[{project_id, workflow_ids}]` — an empty `workflow_ids` for a
+  project means "all of that project's workflows"), `fill_status_ids` (which
+  statuses auto-fill draws from), and the `automation` flags
+  `auto_create_next`, `auto_close`, `move_unfinished`, `auto_fill`. Access is
+  granted if you are a member of *any* linked project; projects you cannot
+  access are stripped from `project_ids`/`workflows` (`hidden_project_count`
+  says how many). Because of that stripping, **never round-trip a read
+  response as a write request** — see below.
+
+### Creating and updating
+
+`pm_create_sprint` needs `project_ids` (non-empty) and `name`; it always
+starts `planned`. `workflows` and `fill_status_ids` are optional — omit
+`workflows` for a project and it gets every workflow attached to that
+project; a `fill_status_id` must belong to the (selected-or-default)
+workflows of at least one listed project, or the call is refused with
+`available_fill_status_ids`.
+
+`pm_update_sprint` is partial, but with a trap that does not exist on other
+`pm_update_*` tools: `project_ids`, `workflows` and `fill_status_ids` are each
+a **replacement set for the key you pass** — pm stores each as
+delete-all-then-reinsert, so an update tool has to re-supply what it isn't
+changing. The rule that keeps this safe: **omit a key entirely to leave it
+untouched; only pass it when you mean to replace the whole set.** Concretely:
+
+- Renaming a sprint → `{sprint_id, name}`. Nothing else in the call.
+- Adding a project to a two-project sprint → read the card first, then pass
+  `project_ids` as the **old set plus the new id**, not just the new id.
+- Same for `workflows`: to add a workflow for one project without touching
+  another project's selection, read the card's `workflows`, add the one
+  entry, and pass the whole list back.
+- A project you cannot access is *never* dropped by this tool, even if your
+  `project_ids` omits it — you cannot use a partial view to detach a sprint
+  from a project you have no role in.
+- `status` is **not** a field of this tool. Activating, completing or
+  deleting a sprint goes through `pm_manage_sprint` — flipping status directly
+  would skip auto-fill, the completed-sprint rename, and move-unfinished.
+- Shrinking `project_ids` does not unlink that project's tasks from the
+  sprint — they stay attached but drop off the sprint board, since the board
+  is filtered by project. The response's `warnings` flags this
+  (`tasks_hidden_from_board`) with the affected task count; re-add the
+  project or move the tasks with `pm_update_task` (`sprint_id: 0`) instead of
+  ignoring the warning.
+
+### Lifecycle: activate, complete, delete
+
+`pm_manage_sprint` takes `sprint_id` and `action` (`activate`/`complete`/`delete`):
+
+- **activate** — only from `planned`; a completed or already-active sprint is
+  refused with `conflict`. When the sprint's `auto_fill` is on, it also pulls
+  matching backlog tasks in (capped at 500 — check `filled_task_count`
+  against that cap before assuming everything eligible was pulled in).
+- **complete** — only from `active`; renames the sprint with its date range.
+  `auto_create_next` copies its projects/workflows/settings into a new
+  `planned` (or already-`active`, if the dates say so) sprint, returned as
+  `new_sprint`. `move_unfinished` moves open tasks into that new sprint —
+  **or into the backlog if `auto_create_next` is off** (`moved_unfinished.target`
+  says which; a bare `target_sprint_id: null` means backlog).
+- **delete** — needs `confirm: true`. Removes the sprint and **detaches its
+  tasks** (`sprint_id` cleared) — it does not delete them.
 
 **The backlog is not a sprint.** It is the absence of one. To list it, call
 `pm_list_tasks` with `sprint_id: -1` (tasks with no sprint, open statuses). To

@@ -16,6 +16,7 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $r = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id' => $this->project_id,
             'subject'    => $subject,
+            'type_slug'  => $this->defaultTypeSlug(),
         ));
         $this->assertTrue($r['ok'], json_encode($r));
         return $r;
@@ -278,6 +279,7 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $child = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id' => $this->project_id,
             'subject'    => 'ZZ Child',
+            'type_slug'  => $this->defaultTypeSlug(),
             'parent_id'  => $ref,
         ));
         $this->assertTrue($child['ok'], json_encode($child));
@@ -319,6 +321,7 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $r = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id'   => $this->project_id,
             'subject'      => 'ZZ Foreign refs',
+            'type_slug'    => $this->defaultTypeSlug(),
             'milestone_id' => $foreign_milestone_id,
             'sprint_id'    => $foreign_sprint_id,
         ));
@@ -362,6 +365,7 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $r = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id'   => $this->project_id,
             'subject'      => 'ZZ Wrong milestone',
+            'type_slug'    => $this->defaultTypeSlug(),
             'milestone_id' => $own_milestone_id + 100000,
         ));
         $this->assertFalse($r['ok'], json_encode($r));
@@ -374,10 +378,86 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $ok = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id'   => $this->project_id,
             'subject'      => 'ZZ Right milestone',
+            'type_slug'    => $this->defaultTypeSlug(),
             'milestone_id' => $own_milestone_id,
         ));
         $this->assertTrue($ok['ok'], json_encode($ok));
         $this->assertSame($own_milestone_id, $ok['task']['milestone_id']);
+    }
+
+    /**
+     * PMCP-555: pm rejects every task with no type_slug unconditionally
+     * (pmTask::validate()). The test project's workflow is 'dvlpmnt', whose
+     * type group ('development') has more than one type, so type_slug cannot
+     * be auto-selected — the tool must say so up front, with the project's
+     * real options, instead of letting pmTask::create() throw a bare "Task
+     * type is required."
+     */
+    public function testCreateTaskWithoutTypeReportsAvailableTypesWhenAmbiguous(): void
+    {
+        $wf = pmWorkflow::getWorkflow($this->workflowId());
+        $expected_types = array_column(pmTypeConfig::getGroup($wf['type_group'])['types'], 'slug');
+        $this->assertGreaterThan(1, count($expected_types), 'fixture assumption: the test project\'s type group must have more than one type');
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ No type',
+        ));
+        $this->assertFalse($r['ok'], json_encode($r));
+        $this->assertSame('invalid_param', $r['error_code']);
+        $this->assertStringContainsString('type_slug', $r['error_message']);
+        $this->assertSame($expected_types, array_column($r['available_types'], 'slug'));
+        $this->assertSame(array(), (new pmTaskModel())->getByField('project_id', $this->project_id, true), 'no task must be left behind');
+    }
+
+    /**
+     * A type_slug that exists in pm's config but belongs to a different
+     * type group than the workflow's (e.g. a 'management' type on a
+     * 'dvlpmnt'/'development' project) used to reach pmTask::create() and
+     * fail with a bare "Task type does not belong to the workflow group."
+     * app_error. It must be caught up front instead, the same way a missing
+     * type_slug is.
+     */
+    public function testCreateTaskRejectsTypeFromWrongGroup(): void
+    {
+        $wf = pmWorkflow::getWorkflow($this->workflowId());
+        $expected_types = array_column(pmTypeConfig::getGroup($wf['type_group'])['types'], 'slug');
+        $this->assertNotContains('org_task', $expected_types, 'fixture assumption: org_task belongs to a different type group');
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ Wrong type group',
+            'type_slug'  => 'org_task',
+        ));
+        $this->assertFalse($r['ok'], json_encode($r));
+        $this->assertSame('invalid_param', $r['error_code']);
+        $this->assertStringContainsString('org_task', $r['error_message']);
+        $this->assertSame($expected_types, array_column($r['available_types'], 'slug'));
+        $this->assertSame(array(), (new pmTaskModel())->getByField('project_id', $this->project_id, true), 'no task must be left behind');
+    }
+
+    /**
+     * PMCP-555 item 3: pm_update_task must not silently drop a task's type
+     * when the update touches unrelated fields. pmTask::save() falls back to
+     * the existing type_slug when the caller omits it (pmTask.class.php
+     * ~463-466) — verified explicitly since the ticket flagged this as
+     * unconfirmed.
+     */
+    public function testUpdateTaskWithoutTypeSlugKeepsExistingType(): void
+    {
+        $created = $this->makeTask('ZZ Keep type');
+        $original_type = $created['task']['type_slug'];
+        $this->assertNotSame('', (string) $original_type, 'fixture assumption: the created task has a real type');
+
+        $r = $this->callTool(new pmMcpUpdateTaskTool(), array(
+            'task_id' => $created['task_id'],
+            'subject' => 'ZZ Renamed, type untouched',
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($original_type, $r['task']['type_slug']);
+
+        $row = (new pmTaskModel())->getById($created['task_id']);
+        $this->assertSame($original_type, $row['type_slug']);
     }
 
     /** 0 means "no milestone / no sprint / unassigned", not an invalid id. */
@@ -387,6 +467,7 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $args = array(
             'project_id'          => $this->project_id,
             'subject'             => 'ZZ Zero refs',
+            'type_slug'           => $this->defaultTypeSlug(),
             'milestone_id'        => 0,
             'sprint_id'           => 0,
             'assignee_contact_id' => 0,
@@ -398,6 +479,74 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $this->assertNull($r['task']['milestone_id']);
         $this->assertNull($r['task']['sprint_id']);
         $this->assertNull($r['task']['assignee_contact_id']);
+    }
+
+    /**
+     * PMCP-518: pm_task.sprint_id became NOT NULL DEFAULT 0 in pm 0.33.5 (0 =
+     * backlog, NULL no longer used — migration 1786112356). Before this fix,
+     * pm_create_task wrote PHP null for an omitted sprint_id, which
+     * waModel::castValue() turned into '' for the NOT NULL int unsigned
+     * column, and the INSERT failed with a 1366 db_error — the ordinary
+     * "create in the backlog" case could not create a task at all.
+     *
+     * type_slug is passed explicitly (rather than relying on the tool's
+     * auto-select) simply because the test project's workflow has more than
+     * one candidate type — see PMCP-555 for why pm_create_task can require it
+     * at all.
+     */
+    public function testCreateTaskWithoutSprintGoesToBacklog(): void
+    {
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ No sprint',
+            'type_slug'  => 'task',
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertNull($r['task']['sprint_id']);
+
+        // The tool's response maps both 0 and NULL to null (formatTaskRow's
+        // !empty() check) — read the raw row to confirm what actually landed
+        // in the NOT NULL column, not just what the tool reports back.
+        $row = (new pmTaskModel())->getById($r['task_id']);
+        $this->assertSame(0, (int) $row['sprint_id']);
+    }
+
+    /** Same failure mode, reached through pm_update_task moving a task to the backlog. */
+    public function testUpdateTaskSprintZeroMovesToBacklog(): void
+    {
+        $sprint_model = new pmSprintModel();
+        $sprint_id = (int) $sprint_model->insert(array(
+            'name'     => 'ZZ Backlog Move Sprint',
+            'status'   => 'planned',
+            'duration' => 1,
+            'sort'     => 1,
+        ));
+        (new pmSprintProjectModel())->insert(array(
+            'sprint_id'  => $sprint_id,
+            'project_id' => $this->project_id,
+        ));
+
+        $created = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ In sprint',
+            'type_slug'  => 'task',
+            'sprint_id'  => $sprint_id,
+        ));
+        $this->assertTrue($created['ok'], json_encode($created));
+        $this->assertSame($sprint_id, $created['task']['sprint_id']);
+
+        $u = $this->callTool(new pmMcpUpdateTaskTool(), array(
+            'task_id'   => $created['task_id'],
+            'sprint_id' => 0,
+        ));
+        $this->assertTrue($u['ok'], json_encode($u));
+        $this->assertNull($u['task']['sprint_id']);
+
+        $row = (new pmTaskModel())->getById($created['task_id']);
+        $this->assertSame(0, (int) $row['sprint_id']);
+
+        $sprint_model->deleteById($sprint_id);
+        (new pmSprintProjectModel())->deleteByField('sprint_id', $sprint_id);
     }
 
     public function testDeleteTaskRequiresConfirm(): void

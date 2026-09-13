@@ -17,6 +17,7 @@ class pmMcpDependencyToolTest extends pmMcpIntegrationTestCase
         $r = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id' => $this->project_id,
             'subject'    => $subject,
+            'type_slug'  => $this->defaultTypeSlug(),
         ));
         $this->assertTrue($r['ok'], json_encode($r));
         return (int) $r['task_id'];
@@ -285,6 +286,7 @@ class pmMcpDependencyToolTest extends pmMcpIntegrationTestCase
         $created = $this->callTool(new pmMcpCreateTaskTool(), array(
             'project_id' => $other_project,
             'subject'    => 'ZZ Cross B',
+            'type_slug'  => $this->defaultTypeSlug($other_project),
         ));
         $this->assertTrue($created['ok'], json_encode($created));
         $b = (int) $created['task_id'];
