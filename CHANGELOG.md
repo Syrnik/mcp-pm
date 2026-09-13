@@ -5,7 +5,7 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.5.0] - 2026-09-14
 
 ### Added
 - **Sprints can be written, not just read** (Task PMCP-400). pm's sprints are
@@ -135,6 +135,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   raised from `>=0.33.1` to `>=0.50.0`, the version this fix was developed
   and tested against — the 0.33.1 pin allowed the plugin to install against a
   pm version whose `sprint_id` column shape it could not actually get right.
+- **`pm_create_task` failed with a bare `app_error` ("Task type is
+  required.") on every call, unless the caller happened to pass a
+  `type_slug`** (Task PMCP-555). pm 0.50.0 made `pmTask::validate()`
+  unconditionally require a non-empty `type_slug` belonging to the
+  workflow's type group, on both create and save; the tool still treated the
+  field as an unchecked optional. `type_slug` is now auto-selected the same
+  way `workflow_id` already is — only when the workflow's type group leaves
+  exactly one candidate — otherwise the tool fails fast with `invalid_param`
+  and `available_types` before any side effect runs, and an explicit value
+  outside that group is rejected the same way instead of reaching
+  `pmTask::create()`. `pm_update_task` needed no change: `pmTask::save()`
+  already falls back to the task's existing `type_slug` when the caller
+  omits it (verified by a new test, since this was flagged unconfirmed).
 
 ## [1.4.0] - 2026-08-07
 

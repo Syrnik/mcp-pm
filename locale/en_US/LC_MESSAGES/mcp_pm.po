@@ -746,3 +746,15 @@ msgstr ""
 
 msgid "external_links[%1$d]: no %2$s record with id %3$s was found; the task was not created."
 msgstr ""
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug is required unless the workflow's type group has exactly one type (pm rejects every task with no type); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr ""
+
+msgid "type_slug is required (more than one task type is available); see available_types."
+msgstr ""
+
+msgid "type_slug \"%s\" is not valid for this workflow; see available_types."
+msgstr ""
+
+msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see, and stale_link_count how many link rows point at a task that no longer exists. The linked record's own name is only included once you can see at least one linked task."
+msgstr ""
