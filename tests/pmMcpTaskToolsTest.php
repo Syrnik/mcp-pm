@@ -334,7 +334,13 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         // The project has neither, so the options are empty — which is exactly
         // the fact the old bare message hid.
         $this->assertSame(array(), $r['available_milestones']);
-        $this->assertSame(array(), $r['available_sprints']);
+        // Sprints: none of its own — but any "all projects" sprint of the
+        // install covers it too and is rightly offered (pm >= 0.75).
+        $own_or_global = array_values(array_map(function ($s) {
+            return (int) $s['id'];
+        }, (new pmSprintModel())->getByProject($this->project_id)));
+        $this->assertSame($own_or_global, array_column($r['available_sprints'], 'id'));
+        $this->assertNotContains($foreign_sprint_id, array_column($r['available_sprints'], 'id'));
 
         // And the same references are refused on update.
         $task = $this->makeTask('ZZ Foreign refs target');
@@ -434,6 +440,62 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         $this->assertStringContainsString('org_task', $r['error_message']);
         $this->assertSame($expected_types, array_column($r['available_types'], 'slug'));
         $this->assertSame(array(), (new pmTaskModel())->getByField('project_id', $this->project_id, true), 'no task must be left behind');
+    }
+
+    /**
+     * PMCP-693: with no type_slug, the project's default type for the
+     * workflow (pm_project_workflows.default_type_slug) is used, as in
+     * pm's own task form. Pick a non-first type so the test cannot pass by
+     * accident.
+     */
+    public function testCreateTaskUsesProjectDefaultType(): void
+    {
+        $types = $this->workflowTypeSlugs();
+        $this->assertGreaterThan(1, count($types), 'fixture assumption: more than one type');
+        $default = $types[1];
+        $this->setDefaultType($this->workflowId(), $default);
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ Default type',
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($default, $r['task']['type_slug']);
+    }
+
+    /** An explicit type_slug wins over the project default. */
+    public function testCreateTaskExplicitTypeOverridesDefault(): void
+    {
+        $types = $this->workflowTypeSlugs();
+        $this->setDefaultType($this->workflowId(), $types[1]);
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ Explicit type',
+            'type_slug'  => $types[0],
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($types[0], $r['task']['type_slug']);
+    }
+
+    /**
+     * A stored default that no longer belongs to the workflow's types (stale
+     * setting) is ignored: the call falls through to the old logic and, with
+     * several types, asks for type_slug.
+     */
+    public function testCreateTaskIgnoresStaleDefaultType(): void
+    {
+        $this->assertNotContains('org_task', $this->workflowTypeSlugs(), 'fixture assumption');
+        $this->setDefaultType($this->workflowId(), 'org_task');
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ Stale default',
+        ));
+        $this->assertFalse($r['ok'], json_encode($r));
+        $this->assertSame('invalid_param', $r['error_code']);
+        $this->assertSame($this->workflowTypeSlugs(), array_column($r['available_types'], 'slug'));
+        $this->assertSame(array(), (new pmTaskModel())->getByField('project_id', $this->project_id, true));
     }
 
     /**

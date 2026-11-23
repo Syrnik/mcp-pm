@@ -11,7 +11,7 @@ class pmMcpGetSprintTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_get_sprint'; }
     public function getRight()       { return 'pm_get_sprint'; }
-    public function getDescription() { return _wp('Get a sprint card: projects, per-project workflow selection, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in at least one of the sprint\'s projects; projects you cannot access are hidden from the card (see hidden_project_count).'); }
+    public function getDescription() { return _wp('Get a sprint card: projects, per-project workflow selection, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in at least one of the sprint\'s projects; projects you cannot access are hidden from the card (see hidden_project_count). An all-projects sprint (all_projects: true) covers every active project; project_ids then lists the covered projects you can access.'); }
 
     public function getInputSchema()
     {
@@ -37,7 +37,8 @@ class pmMcpGetSprintTool extends pmMcpToolBase
             // to access at least one. accessibleProjectIds() === null means
             // app-admin (no restriction).
             $accessible = pmMcpProjectHelper::accessibleProjectIds();
-            $project_ids = array_map('intval', $sprint['project_ids'] ?? array());
+            // An "all projects" sprint (project_ids === null) covers every active project.
+            $project_ids = pmMcpSprintHelper::coveredProjectIds($sprint);
             if ($accessible !== null && !array_intersect($project_ids, $accessible)) {
                 return $this->softFail('access_denied', _wp('You are not a member of any of this sprint\'s projects.'));
             }

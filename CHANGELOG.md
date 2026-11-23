@@ -5,6 +5,56 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-11-23
+
+### Added
+- **Task types and the project's default type are visible** (Task PMCP-693).
+  Workflows in `pm_get_workflow`, `pm_get_project` (and the project card the
+  project write tools return) now carry `types` — the task types the workflow
+  accepts, as `{slug, name, color, icon}`, the shape of pm's REST
+  `pm.workflow.get` — and `default_type_slug`, the project's default task type
+  for that workflow set in the project settings (`null` when unset, or when
+  the stored type no longer belongs to the workflow). `pm_list_statuses` with
+  `workflow_id` returns `types` as well. Before, the only way for an agent to
+  learn the valid types was a failed `pm_create_task`.
+- **"All projects" sprints** (Task PMCP-694). pm can store a sprint with no
+  project links, covering every active project. The sprint tools used to read
+  that as "no projects": such a sprint was missing from
+  `pm_list_sprints(project_id)` and from non-admins' lists, came back with an
+  empty `project_ids`, refused non-admins in `pm_get_sprint` /
+  `pm_manage_sprint`, and `pm_update_sprint` tried to save it with an empty
+  project set. Now every sprint row/card carries `all_projects`; for such a
+  sprint `project_ids`/`projects` list the covered (active) projects you can
+  see, with `hidden_project_count` for the rest. `pm_create_sprint` and
+  `pm_update_sprint` take `all_projects` (mutually exclusive with
+  `project_ids`, no `workflows`); an update that names neither keeps the
+  current mode.
+
+### Changed
+- **Sprint write rights follow pm 1.0.0's per-operation rules** (pm #593,
+  #595; Task PMCP-694) instead of a single "sprint.edit in at least one
+  project" check — stricter for non-admins: creating a sprint for a set of
+  projects needs `sprint.edit` in every one of them, and so does every
+  project added or removed and deleting a sprint (all covered projects);
+  creating or re-scoping an all-projects sprint is for the pm administrator
+  only; fields, activation and completion still need it in one covered
+  project. The workflow selection of a project where you lack `sprint.edit`
+  keeps its stored value (warning `workflows_locked`), not only for projects
+  hidden from you.
+- `pm_create_task` without `type_slug` uses the project's default type for
+  the workflow first, as pm's own task form does (pm's REST `pm.task.create`
+  does not), then the workflow's only type; otherwise it fails with
+  `invalid_param` as before. `available_types` in its errors now has the same
+  `{slug, name, color, icon}` shape as `types`.
+- Requires `app.pm` >= 1.0.0 (the per-project default type appeared in
+  0.75.0).
+
+### Fixed
+- `pm_update_project` with `workflow_ids` no longer wipes the per-workflow
+  default task types set in the project settings: pm's model re-inserts the
+  workflow set from scratch, and a plain list of slugs was saved with every
+  default reset to empty.
+
 ## [1.5.0] - 2026-09-14
 
 ### Added

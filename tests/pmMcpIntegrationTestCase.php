@@ -22,6 +22,12 @@ abstract class pmMcpIntegrationTestCase extends TestCase
     /** @var int[] extra project ids created by a test, cleaned up in tearDown */
     protected $extra_project_ids = array();
 
+    /**
+     * @var int[] sprints a test created outside any project link — "all
+     * projects" sprints — removed in tearDown (dropProject() cannot find them).
+     */
+    protected $extra_sprint_ids = array();
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -34,8 +40,12 @@ abstract class pmMcpIntegrationTestCase extends TestCase
         foreach (array_merge(array($this->project_id), $this->extra_project_ids) as $pid) {
             $this->dropProject((int) $pid);
         }
+        foreach ($this->extra_sprint_ids as $sid) {
+            $this->dropSprint((int) $sid);
+        }
         $this->project_id = 0;
         $this->extra_project_ids = array();
+        $this->extra_sprint_ids = array();
         parent::tearDown();
     }
 
@@ -77,17 +87,31 @@ abstract class pmMcpIntegrationTestCase extends TestCase
         }
         (new pmTagModel())->deleteByField('project_id', $pid);
         (new pmWikiPageModel())->deleteByField('project_id', $pid);
-        foreach ((new pmSprintModel())->getByProject($pid) as $s) {
-            (new pmSprintProjectModel())->deleteByField('sprint_id', $s['id']);
-            (new pmSprintFillStatusModel())->deleteByField('sprint_id', $s['id']);
-            (new pmSprintWorkflowModel())->deleteByField('sprint_id', $s['id']);
-            (new pmSprintModel())->deleteById($s['id']);
+        // Only sprints explicitly linked to this project. NOT
+        // pmSprintModel::getByProject(): since pm 0.75 it also returns every
+        // "all projects" sprint (no pm_sprint_project rows), and deleting
+        // those would wipe real sprints of the install on every teardown.
+        foreach ((new pmSprintProjectModel())->getByField('project_id', $pid, true) as $link) {
+            $this->dropSprint((int) $link['sprint_id']);
         }
         (new pmMilestoneModel())->deleteByField('project_id', $pid);
         (new pmActivityLogModel())->deleteByField('project_id', $pid);
         (new pmProjectUserModel())->deleteByField('project_id', $pid);
         (new pmProjectWorkflowModel())->deleteByField('project_id', $pid);
         (new pmProjectModel())->deleteById($pid);
+    }
+
+    /** Remove one sprint and its relation rows. */
+    protected function dropSprint($sid)
+    {
+        if ($sid <= 0) {
+            return;
+        }
+        (new pmSprintProjectModel())->deleteByField('sprint_id', $sid);
+        (new pmSprintFillStatusModel())->deleteByField('sprint_id', $sid);
+        (new pmSprintWorkflowModel())->deleteByField('sprint_id', $sid);
+        (new pmTaskModel())->updateByField('sprint_id', $sid, array('sprint_id' => 0));
+        (new pmSprintModel())->deleteById($sid);
     }
 
     /** The workflow slug attached to the test project. */
@@ -110,6 +134,25 @@ abstract class pmMcpIntegrationTestCase extends TestCase
         $group = !empty($wf['type_group']) ? pmTypeConfig::getGroup($wf['type_group']) : null;
         $types = array_values($group['types'] ?? pmTypeConfig::getAllTypes());
         return $types ? (string) $types[0]['slug'] : 'task';
+    }
+
+    /**
+     * Set (or clear, with null) the project's default task type for a
+     * workflow — pm_project_workflows.default_type_slug, what pm's project
+     * settings form writes. The row goes away with dropProject().
+     */
+    protected function setDefaultType($workflow_id, $type_slug, $project_id = null)
+    {
+        (new pmProjectWorkflowModel())->updateByField(
+            array('project_id' => (int) ($project_id ?? $this->project_id), 'workflow_id' => (string) $workflow_id),
+            array('default_type_slug' => (string) $type_slug)
+        );
+    }
+
+    /** All type slugs of the test project's workflow, in config order. */
+    protected function workflowTypeSlugs()
+    {
+        return array_column(pmMcpWorkflowHelper::typeOptions(pmWorkflow::getWorkflow($this->workflowId())), 'slug');
     }
 
     /**

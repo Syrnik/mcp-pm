@@ -9,7 +9,7 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_create_task'; }
     public function getRight()       { return 'pm_create_task'; }
-    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug is required unless the workflow\'s type group has exactly one type (pm rejects every task with no type); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card.'); }
+    public function getDescription() { return _wp('Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug may be omitted when the project has a default task type for the workflow or the workflow accepts exactly one type (pm rejects every task with no type; the accepted types and the default are in pm_get_workflow); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card.'); }
 
     public function getInputSchema()
     {
@@ -23,7 +23,7 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                 'workflow_id'         => array('type' => 'string', 'description' => 'Workflow slug. Optional when the project has a single workflow.'),
                 'status_id'           => array('type' => 'integer', 'minimum' => 1, 'description' => 'Initial status id. Defaults to the first status when omitted.'),
                 'priority'            => array('type' => 'string', 'description' => 'Priority slug (e.g. low, normal, high). Defaults to normal.'),
-                'type_slug'           => array('type' => 'string', 'description' => 'Task type slug, from the workflow\'s type group. pm requires a type on every task; omit this only when the group has exactly one type (it is then auto-selected). An omitted-but-ambiguous or a wrong type both fail with invalid_param and list available_types.'),
+                'type_slug'           => array('type' => 'string', 'description' => 'Task type slug, one of the workflow\'s types (pm_get_workflow -> workflows[].types). pm requires a type on every task. When omitted, the project\'s default type for the workflow (default_type_slug) is used, else the only type of the workflow; if neither applies, or the type is not one of the workflow\'s, the call fails with invalid_param and lists available_types.'),
                 'assignee_contact_id' => array('type' => 'integer', 'minimum' => 0, 'description' => 'Assignee contact id (must be a project participant). Optional: omit or 0 leaves the task unassigned.'),
                 'milestone_id'        => array('type' => 'integer', 'minimum' => 0, 'description' => 'Milestone id (must belong to the project). Optional: omit or 0 for no milestone.'),
                 'sprint_id'           => array('type' => 'integer', 'minimum' => 0, 'description' => 'Sprint id (must belong to the project). Optional: omit or 0 puts the task in the backlog.'),
@@ -91,35 +91,34 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
             // Resolve the type: pmTask::validate() rejects every task with no
             // type_slug, or one that does not belong to the workflow's type
             // group, unconditionally (pm's "Types only from workflow, type is
-            // required on save" change), but this tool used to treat the
-            // field as an unchecked optional. Auto-select it the same way
-            // workflow_id is auto-selected above — only when the workflow's
-            // type group leaves exactly one candidate — and validate an
-            // explicit value against that same list, instead of letting
-            // pmTask::create() throw a bare "Task type is required." /
-            // "Invalid task type." / "Task type does not belong to the
-            // workflow group." (PMCP-555).
-            $wf = pmWorkflow::getWorkflow($workflow_id);
-            $type_group = $wf['type_group'] ?? null;
-            $group = $type_group ? pmTypeConfig::getGroup($type_group) : null;
-            $type_options = array_values($group['types'] ?? pmTypeConfig::getAllTypes());
+            // required on save" change). When the caller omits it, pick it the
+            // way pm's own task form does — the project's default type for
+            // this workflow (pm_project_workflows.default_type_slug, PMCP-693;
+            // pm's REST pm.task.create ignores it) — then fall back to the
+            // only type of the group (PMCP-555). An explicit value is checked
+            // against the same list up front, instead of letting
+            // pmTask::create() throw a bare app_error.
+            $type_options = pmMcpWorkflowHelper::typeOptions(pmWorkflow::getWorkflow($workflow_id));
 
             $type_slug = $this->argString($arguments, 'type_slug');
             if ($type_slug === '') {
-                if (count($type_options) === 1) {
+                $default_type = pmMcpWorkflowHelper::defaultTypeSlug($project_id, $workflow_id, $type_options);
+                if ($default_type !== null) {
+                    $type_slug = $default_type;
+                } elseif (count($type_options) === 1) {
                     $type_slug = $type_options[0]['slug'];
                 } else {
                     return $this->softFail(
                         'invalid_param',
-                        _wp('type_slug is required (more than one task type is available); see available_types.'),
-                        array('available_types' => self::formatTypeOptions($type_options))
+                        _wp('type_slug is required: the project has no default task type for this workflow and more than one type is available; see available_types.'),
+                        array('available_types' => pmMcpWorkflowHelper::formatTypes($type_options))
                     );
                 }
             } elseif (!in_array($type_slug, array_column($type_options, 'slug'), true)) {
                 return $this->softFail(
                     'invalid_param',
                     sprintf(_wp('type_slug "%s" is not valid for this workflow; see available_types.'), $type_slug),
-                    array('available_types' => self::formatTypeOptions($type_options))
+                    array('available_types' => pmMcpWorkflowHelper::formatTypes($type_options))
                 );
             }
 
@@ -258,13 +257,5 @@ class pmMcpCreateTaskTool extends pmMcpToolBase
                 'task'    => pmMcpTaskHelper::cardById($task_id),
             ));
         });
-    }
-
-    /** Reduce pmTypeConfig type entries to the slug/name pair callers act on. */
-    private static function formatTypeOptions(array $type_options)
-    {
-        return array_map(static function ($t) {
-            return array('slug' => $t['slug'], 'name' => $t['name']);
-        }, $type_options);
     }
 }

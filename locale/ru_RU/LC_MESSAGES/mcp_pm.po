@@ -14,6 +14,7 @@ msgstr ""
 "X-Poedit-Basepath: utf-8\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: .\n"
+"Language: ru_RU\n"
 
 msgid "Project not found."
 msgstr "Проект не найден."
@@ -758,3 +759,66 @@ msgstr "type_slug «%s» недопустим для этого воркфлоу
 
 msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see, and stale_link_count how many link rows point at a task that no longer exists. The linked record's own name is only included once you can see at least one linked task."
 msgstr "Находит задачи pm, связанные с записью другого интегрированного приложения (заявка helpdesk, сделка crm, заказ shop). Возвращает только задачи из доступных вам проектов; hidden_count показывает, сколько ещё существует в недоступных проектах, а stale_link_count — сколько строк связи указывает на уже удалённую задачу. Название самой связанной записи включается только если вам видна хотя бы одна связанная задача."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug may be omitted when the project has a default task type for the workflow or the workflow accepts exactly one type (pm rejects every task with no type; the accepted types and the default are in pm_get_workflow); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr "Создаёт задачу в проекте. Требует членства в проекте с правом task.create. workflow_id обязателен, если у проекта не ровно один воркфлоу; type_slug можно не указывать, если у проекта задан тип задачи по умолчанию для воркфлоу или воркфлоу допускает ровно один тип (pm отвергает любую задачу без типа; допустимые типы и тип по умолчанию — в pm_get_workflow); исполнитель, веха и спринт необязательны — не указывайте их (или передайте 0), чтобы оставить пустыми. Теги можно задать тем же вызовом через поле tags, а связи с helpdesk/crm/shop-записями — через external_links. Возвращает карточку созданной задачи."
+
+msgid "type_slug is required: the project has no default task type for this workflow and more than one type is available; see available_types."
+msgstr "type_slug обязателен: у проекта не задан тип задачи по умолчанию для этого воркфлоу, а доступно более одного типа; см. available_types."
+
+msgid "Get the workflows of a project: each workflow's statuses (with local names), transition matrix, accepted task types (types) and the project's default task type for it (default_type_slug, null when not set). Requires project membership."
+msgstr "Возвращает воркфлоу проекта: статусы каждого воркфлоу (с локальными именами), матрицу переходов, допустимые типы задач (types) и тип задачи по умолчанию в проекте (default_type_slug, null, если не задан). Требует членства в проекте."
+
+msgid "List global task statuses. Pass workflow_id to also get that workflow's statuses (with local names), transition matrix and accepted task types."
+msgstr "Список глобальных статусов задач. Передайте workflow_id, чтобы также получить статусы этого воркфлоу (с локальными именами), матрицу переходов и допустимые типы задач."
+
+msgid "Create a sprint spanning one or more projects, with a per-project workflow subset and auto-fill statuses. Pass project_ids, or all_projects: true for a sprint covering every active project (pm administrator only). Always created \"planned\" — use pm_manage_sprint to activate it. Requires the sprint.edit permission in every project listed. Returns the created sprint card."
+msgstr "Создаёт спринт на один или несколько проектов с набором воркфлоу по проектам и статусами автонаполнения. Передайте project_ids или all_projects: true для спринта на все активные проекты (только администратор pm). Всегда создаётся «запланированным» — для запуска используйте pm_manage_sprint. Требует права sprint.edit в каждом указанном проекте. Возвращает карточку созданного спринта."
+
+msgid "Pass either project_ids or all_projects, not both."
+msgstr "Передайте либо project_ids, либо all_projects, но не оба сразу."
+
+msgid "An all-projects sprint has no workflow selection: it uses every workflow of every project. Omit workflows."
+msgstr "У спринта «все проекты» нет выбора воркфлоу: он использует все воркфлоу каждого проекта. Не передавайте workflows."
+
+msgid "Only the pm administrator can create an all-projects sprint."
+msgstr "Создать спринт «все проекты» может только администратор pm."
+
+msgid "At least one project is required (or pass all_projects: true)."
+msgstr "Нужен хотя бы один проект (или передайте all_projects: true)."
+
+msgid "Creating a sprint requires the sprint.edit permission in every project it spans."
+msgstr "Для создания спринта нужно право sprint.edit в каждом его проекте."
+
+msgid "Get a sprint card: projects, per-project workflow selection, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in at least one of the sprint's projects; projects you cannot access are hidden from the card (see hidden_project_count). An all-projects sprint (all_projects: true) covers every active project; project_ids then lists the covered projects you can access."
+msgstr "Возвращает карточку спринта: проекты, выбор воркфлоу по проектам, статусы автонаполнения и настройки автоматизации (auto-create-next, auto-close, move-unfinished, auto-fill). Требует членства хотя бы в одном из проектов спринта; недоступные вам проекты скрыты из карточки (см. hidden_project_count). Спринт «все проекты» (all_projects: true) охватывает все активные проекты; project_ids тогда перечисляет доступные вам проекты из охвата."
+
+msgid "List sprints you can access (active first, then planned, then completed) with automation settings. Omit project_id to span every project you can access; a sprint spanning several projects is returned once. All-projects sprints (all_projects: true) cover every active project, so they appear under any project_id. Projects you cannot access are stripped from project_ids/workflows on each row — hidden_project_count and access_narrowed flag when that happened. Paginated. Backlog tasks are listed via pm_list_tasks with sprint_id=-1."
+msgstr "Список доступных спринтов (сначала активные, затем запланированные, затем завершённые) с настройками автоматизации. Без project_id — по всем доступным проектам; спринт на несколько проектов возвращается один раз. Спринты «все проекты» (all_projects: true) охватывают все активные проекты, поэтому видны при любом project_id. Недоступные проекты убираются из project_ids/workflows каждой строки — об этом говорят hidden_project_count и access_narrowed. С пагинацией. Задачи бэклога — через pm_list_tasks с sprint_id=-1."
+
+msgid "Activate, complete or delete a sprint. activate: planned -> active, optionally pulling in backlog tasks (auto_fill). complete: active -> completed, renames the sprint with its date range and applies auto_create_next / move_unfinished. delete: removes the sprint and detaches (does not delete) its tasks — requires confirm. activate and complete require the sprint.edit permission in at least one project the sprint covers; delete requires it in every covered project, so an all-projects sprint can only be deleted by the pm administrator."
+msgstr "Запускает, завершает или удаляет спринт. activate: planned -> active, при включённом auto_fill подтягивает задачи из бэклога. complete: active -> completed, переименовывает спринт по диапазону дат и применяет auto_create_next / move_unfinished. delete: удаляет спринт и отвязывает (не удаляет) его задачи — требует confirm. Для activate и complete нужно право sprint.edit хотя бы в одном охваченном проекте; для delete — во всех охваченных, поэтому спринт «все проекты» может удалить только администратор pm."
+
+msgid "Deleting a sprint requires the sprint.edit permission in every project it covers."
+msgstr "Для удаления спринта нужно право sprint.edit в каждом охваченном им проекте."
+
+msgid "Update a sprint's name, goal, dates, project set, workflow selection or auto-fill statuses. Only supplied fields change. project_ids/workflows/fill_status_ids are each a replacement set for the key you pass — omit the key to keep the current value; projects you cannot access are never removed. all_projects: true makes the sprint cover every active project; it and changing the projects of such a sprint are for the pm administrator only. Status is not settable here — use pm_manage_sprint to activate, complete or delete. Requires the sprint.edit permission in at least one covered project, and in every project added or removed. Returns the updated sprint card."
+msgstr "Изменяет название, цель, даты, набор проектов, выбор воркфлоу или статусы автонаполнения спринта. Меняются только переданные поля. project_ids/workflows/fill_status_ids — каждый заменяет набор целиком для переданного ключа; не передавайте ключ, чтобы оставить текущее значение; недоступные вам проекты никогда не удаляются. all_projects: true делает спринт охватывающим все активные проекты; это и смена проектов такого спринта доступны только администратору pm. Статус здесь не меняется — для запуска, завершения или удаления используйте pm_manage_sprint. Требует права sprint.edit хотя бы в одном охваченном проекте и в каждом добавляемом или убираемом. Возвращает обновлённую карточку спринта."
+
+msgid "Pass either project_ids or all_projects: true, not both."
+msgstr "Передайте либо project_ids, либо all_projects: true, но не оба сразу."
+
+msgid "all_projects: false needs project_ids: at least one project is required."
+msgstr "all_projects: false требует project_ids: нужен хотя бы один проект."
+
+msgid "Only the pm administrator can set a sprint to all projects."
+msgstr "Сделать спринт «все проекты» может только администратор pm."
+
+msgid "Only the pm administrator can change the projects of an all-projects sprint."
+msgstr "Менять проекты спринта «все проекты» может только администратор pm."
+
+msgid "Changing the projects of a sprint requires the sprint.edit permission in every project added or removed."
+msgstr "Для смены проектов спринта нужно право sprint.edit в каждом добавляемом или убираемом проекте."
+
+msgid "You lack the sprint.edit permission in some of the listed projects; their workflow selection was kept as stored."
+msgstr "У вас нет права sprint.edit в некоторых из указанных проектов; их выбор воркфлоу оставлен как был."

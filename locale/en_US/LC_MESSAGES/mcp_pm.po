@@ -14,6 +14,7 @@ msgstr ""
 "X-Poedit-Basepath: utf-8\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: .\n"
+"Language: en_US\n"
 
 msgid "Project not found."
 msgstr ""
@@ -757,4 +758,67 @@ msgid "type_slug \"%s\" is not valid for this workflow; see available_types."
 msgstr ""
 
 msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see, and stale_link_count how many link rows point at a task that no longer exists. The linked record's own name is only included once you can see at least one linked task."
+msgstr ""
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug may be omitted when the project has a default task type for the workflow or the workflow accepts exactly one type (pm rejects every task with no type; the accepted types and the default are in pm_get_workflow); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr ""
+
+msgid "type_slug is required: the project has no default task type for this workflow and more than one type is available; see available_types."
+msgstr ""
+
+msgid "Get the workflows of a project: each workflow's statuses (with local names), transition matrix, accepted task types (types) and the project's default task type for it (default_type_slug, null when not set). Requires project membership."
+msgstr ""
+
+msgid "List global task statuses. Pass workflow_id to also get that workflow's statuses (with local names), transition matrix and accepted task types."
+msgstr ""
+
+msgid "Create a sprint spanning one or more projects, with a per-project workflow subset and auto-fill statuses. Pass project_ids, or all_projects: true for a sprint covering every active project (pm administrator only). Always created \"planned\" — use pm_manage_sprint to activate it. Requires the sprint.edit permission in every project listed. Returns the created sprint card."
+msgstr ""
+
+msgid "Pass either project_ids or all_projects, not both."
+msgstr ""
+
+msgid "An all-projects sprint has no workflow selection: it uses every workflow of every project. Omit workflows."
+msgstr ""
+
+msgid "Only the pm administrator can create an all-projects sprint."
+msgstr ""
+
+msgid "At least one project is required (or pass all_projects: true)."
+msgstr ""
+
+msgid "Creating a sprint requires the sprint.edit permission in every project it spans."
+msgstr ""
+
+msgid "Get a sprint card: projects, per-project workflow selection, auto-fill statuses and automation settings (auto-create-next, auto-close, move-unfinished, auto-fill). Requires membership in at least one of the sprint's projects; projects you cannot access are hidden from the card (see hidden_project_count). An all-projects sprint (all_projects: true) covers every active project; project_ids then lists the covered projects you can access."
+msgstr ""
+
+msgid "List sprints you can access (active first, then planned, then completed) with automation settings. Omit project_id to span every project you can access; a sprint spanning several projects is returned once. All-projects sprints (all_projects: true) cover every active project, so they appear under any project_id. Projects you cannot access are stripped from project_ids/workflows on each row — hidden_project_count and access_narrowed flag when that happened. Paginated. Backlog tasks are listed via pm_list_tasks with sprint_id=-1."
+msgstr ""
+
+msgid "Activate, complete or delete a sprint. activate: planned -> active, optionally pulling in backlog tasks (auto_fill). complete: active -> completed, renames the sprint with its date range and applies auto_create_next / move_unfinished. delete: removes the sprint and detaches (does not delete) its tasks — requires confirm. activate and complete require the sprint.edit permission in at least one project the sprint covers; delete requires it in every covered project, so an all-projects sprint can only be deleted by the pm administrator."
+msgstr ""
+
+msgid "Deleting a sprint requires the sprint.edit permission in every project it covers."
+msgstr ""
+
+msgid "Update a sprint's name, goal, dates, project set, workflow selection or auto-fill statuses. Only supplied fields change. project_ids/workflows/fill_status_ids are each a replacement set for the key you pass — omit the key to keep the current value; projects you cannot access are never removed. all_projects: true makes the sprint cover every active project; it and changing the projects of such a sprint are for the pm administrator only. Status is not settable here — use pm_manage_sprint to activate, complete or delete. Requires the sprint.edit permission in at least one covered project, and in every project added or removed. Returns the updated sprint card."
+msgstr ""
+
+msgid "Pass either project_ids or all_projects: true, not both."
+msgstr ""
+
+msgid "all_projects: false needs project_ids: at least one project is required."
+msgstr ""
+
+msgid "Only the pm administrator can set a sprint to all projects."
+msgstr ""
+
+msgid "Only the pm administrator can change the projects of an all-projects sprint."
+msgstr ""
+
+msgid "Changing the projects of a sprint requires the sprint.edit permission in every project added or removed."
+msgstr ""
+
+msgid "You lack the sprint.edit permission in some of the listed projects; their workflow selection was kept as stored."
 msgstr ""

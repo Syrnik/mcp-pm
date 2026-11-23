@@ -17,7 +17,7 @@ class pmMcpManageSprintTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_manage_sprint'; }
     public function getRight()       { return 'pm_manage_sprint'; }
-    public function getDescription() { return _wp('Activate, complete or delete a sprint. activate: planned -> active, optionally pulling in backlog tasks (auto_fill). complete: active -> completed, renames the sprint with its date range and applies auto_create_next / move_unfinished. delete: removes the sprint and detaches (does not delete) its tasks — requires confirm. Requires the sprint.edit permission.'); }
+    public function getDescription() { return _wp('Activate, complete or delete a sprint. activate: planned -> active, optionally pulling in backlog tasks (auto_fill). complete: active -> completed, renames the sprint with its date range and applies auto_create_next / move_unfinished. delete: removes the sprint and detaches (does not delete) its tasks — requires confirm. activate and complete require the sprint.edit permission in at least one project the sprint covers; delete requires it in every covered project, so an all-projects sprint can only be deleted by the pm administrator.'); }
 
     public function getInputSchema()
     {
@@ -48,14 +48,22 @@ class pmMcpManageSprintTool extends pmMcpToolBase
             }
 
             $accessible = pmMcpProjectHelper::accessibleProjectIds();
-            $stored_pids = array_map('intval', $stored['project_ids'] ?? array());
-            if ($accessible !== null && !array_intersect($stored_pids, $accessible)) {
+            // Explicit project list; empty for an "all projects" sprint, which
+            // covers every active project instead.
+            $stored_pids = array_map('intval', (array) ($stored['project_ids'] ?? array()));
+            $covered = pmMcpSprintHelper::coveredProjectIds($stored);
+            if ($accessible !== null && !array_intersect($covered, $accessible)) {
                 return $this->softFail('access_denied', _wp('You are not a member of any of this sprint\'s projects.'));
             }
 
-            // Always checked, even for a sprint with no linked projects — pm's
-            // own activateAction skips the check in exactly that case; we don't.
-            pmMcpSprintHelper::requireCanEdit($stored_pids);
+            // pm #595: activate/complete need sprint.edit in at least one
+            // covered project (rule 5); delete needs it in every one (rule 6) —
+            // for an "all projects" sprint that is effectively the app admin.
+            if ($action === 'delete') {
+                pmMcpSprintHelper::requireCanEditAll($covered, _wp('Deleting a sprint requires the sprint.edit permission in every project it covers.'));
+            } else {
+                pmMcpSprintHelper::requireCanEdit($covered);
+            }
 
             switch ($action) {
                 case 'activate':
@@ -175,6 +183,7 @@ class pmMcpManageSprintTool extends pmMcpToolBase
             'sprint_id'            => (int) $sprint_id,
             'deleted'              => true,
             'name'                 => $stored['name'],
+            'all_projects'         => pmMcpSprintHelper::isAllProjects($stored),
             'project_ids'          => $stored_pids,
             'detached_task_count'  => $affected['count'],
             'sample_task_ids'      => $affected['sample_task_ids'],

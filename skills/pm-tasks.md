@@ -59,10 +59,13 @@ Only `project_id` and `subject` are required. The traps:
   in which case it is filled in for you. When a project has several, omitting
   it returns `invalid_param` with `available_workflows` — pick from that list.
 - **`type_slug`** — pm rejects every task with no type, full stop, and one
-  outside the workflow's type group. It is filled in for you *only* when that
-  group has exactly one type; otherwise omitting it, or passing one from the
-  wrong group, returns `invalid_param` with `available_types` — pick a `slug`
-  from that list.
+  outside the workflow's types. The accepted types are in `pm_get_workflow` →
+  `workflows[].types`. Omit it and it is filled in for you from the project's
+  **default type** for that workflow (`workflows[].default_type_slug`, set in
+  the project settings), or else when the workflow has exactly one type.
+  Otherwise omitting it, or passing a type the workflow does not accept,
+  returns `invalid_param` with `available_types` — pick a `slug` from that
+  list.
 - **`assignee_contact_id`, `milestone_id`, `sprint_id`, `parent_id` are
   optional.** Omit them, or pass `0`. Do not invent an id to fill the slot.
 - A milestone, sprint or assignee **belonging to another project** is refused

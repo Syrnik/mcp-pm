@@ -11,6 +11,13 @@
  * one of its projects (mirrors pmSprint::canEdit() and the pm backend's
  * cross-project sprint board).
  *
+ * A sprint with NO rows in pm_sprint_project is an "all projects" sprint
+ * (pm `c33fbd3`, #290): pmSprintModel reports project_ids = null and pm
+ * treats it as covering every active project (pmSprint::getCoveredProjectIds()).
+ * The helper keeps that null intact until narrowToAccessible() expands it to
+ * the covered set the caller can see and records `_all_projects`, so every
+ * formatted row carries `all_projects` and a plain-array `project_ids`.
+ *
  * `project_id` is kept on every formatted row as a deprecated convenience
  * alias for `project_ids[0]` — computed from the (possibly access-narrowed)
  * set the caller can see, so it never leaks the id of a project the caller
@@ -27,7 +34,8 @@ class pmMcpSprintHelper
      */
     public static function formatSprintRow(array $s)
     {
-        $project_ids = array_map('intval', $s['project_ids'] ?? array());
+        $all_projects = self::isAllProjects($s);
+        $project_ids = array_map('intval', (array) ($s['project_ids'] ?? array()));
         $row = array(
             'id'                   => (int) $s['id'],
             'name'                 => $s['name'],
@@ -41,6 +49,9 @@ class pmMcpSprintHelper
             // Deprecated: the first project you can see. Use project_ids for
             // the full set — a sprint can span several projects.
             'project_id'           => $project_ids ? $project_ids[0] : null,
+            // "All projects" sprint (no pm_sprint_project rows): covers every
+            // active project; project_ids then lists the covered ones you can see.
+            'all_projects'         => $all_projects,
             'project_ids'          => $project_ids,
             'project_count'        => count($project_ids),
             'hidden_project_count' => (int) ($s['_hidden_project_count'] ?? 0),
@@ -92,11 +103,15 @@ class pmMcpSprintHelper
      */
     public static function narrowToAccessible(array $s, ?array $accessible)
     {
+        // Expand an "all projects" sprint (project_ids === null) into the
+        // projects it actually covers, remembering the mode.
+        $s['_all_projects'] = self::isAllProjects($s);
+        $s['project_ids'] = self::coveredProjectIds($s);
         if ($accessible === null) {
             $s['_hidden_project_count'] = 0;
             return $s;
         }
-        $project_ids = array_map('intval', $s['project_ids'] ?? array());
+        $project_ids = $s['project_ids'];
         $visible = array_values(array_intersect($project_ids, $accessible));
         $s['_hidden_project_count'] = count($project_ids) - count($visible);
         $s['project_ids'] = $visible;
@@ -113,41 +128,26 @@ class pmMcpSprintHelper
     }
 
     /**
-     * Bulk-load sprints without N+1 queries: one query for the pm_sprint rows
-     * (scoped by project when asked), then one getBySprintIds() call per
-     * relation table.
+     * Bulk-load sprints without N+1 queries: one query for the pm_sprint rows,
+     * then one getBySprintIds() call per relation table. Scoping is done on
+     * the covered project set (pmSprint::getCoveredProjectIds()), the same way
+     * pm's REST pm.sprint.list does it, so an "all projects" sprint (no
+     * pm_sprint_project rows, project_ids = null) is found under any active
+     * project and by any member of one.
      *
-     * @param int|null   $project_id  Restrict to sprints linked to this project.
-     * @param int[]|null $accessible  When $project_id is omitted: the caller's
-     *                                accessible project ids, or null for no
-     *                                restriction (pm app-admin).
-     * @return array  pm_sprint rows keyed by id, decorated with project_ids,
-     *                fill_status_ids and workflows.
+     * @param int|null   $project_id  Restrict to sprints covering this project.
+     * @param int[]|null $accessible  The caller's accessible project ids, or
+     *                                null for no restriction (pm app-admin).
+     * @return array  pm_sprint rows keyed by id, decorated with project_ids
+     *                (null = all projects), fill_status_ids and workflows.
      */
     public static function loadSprints($project_id = null, ?array $accessible = null)
     {
-        $sprint_model = new pmSprintModel();
-
-        if ($project_id) {
-            $sprints = $sprint_model->query(
-                "SELECT s.* FROM pm_sprint s
-                 JOIN pm_sprint_project sp ON s.id = sp.sprint_id
-                 WHERE sp.project_id = i:pid",
-                array('pid' => (int) $project_id)
-            )->fetchAll('id');
-        } elseif ($accessible === null) {
-            $sprints = $sprint_model->query("SELECT * FROM pm_sprint")->fetchAll('id');
-        } elseif (!$accessible) {
+        if ($accessible !== null && !$accessible) {
             return array();
-        } else {
-            $sprints = $sprint_model->query(
-                "SELECT DISTINCT s.* FROM pm_sprint s
-                 JOIN pm_sprint_project sp ON s.id = sp.sprint_id
-                 WHERE sp.project_id IN (i:ids)",
-                array('ids' => $accessible)
-            )->fetchAll('id');
         }
 
+        $sprints = (new pmSprintModel())->query("SELECT * FROM pm_sprint")->fetchAll('id');
         if (!$sprints) {
             return array();
         }
@@ -156,16 +156,59 @@ class pmMcpSprintHelper
         $projects      = (new pmSprintProjectModel())->getBySprintIds($ids);
         $fill_statuses = (new pmSprintFillStatusModel())->getBySprintIds($ids);
         $workflows     = (new pmSprintWorkflowModel())->getBySprintIds($ids);
+        $active_ids    = self::activeProjectIds();
 
-        foreach ($sprints as &$s) {
-            $sid = (int) $s['id'];
-            $s['project_ids']     = $projects[$sid] ?? array();
+        $out = array();
+        foreach ($sprints as $sid => $s) {
+            $sid = (int) $sid;
+            $s['project_ids']     = isset($projects[$sid]) ? array_map('intval', $projects[$sid]) : null;
             $s['fill_status_ids'] = $fill_statuses[$sid] ?? array();
             $s['workflows']       = $workflows[$sid] ?? array();
-        }
-        unset($s);
 
-        return $sprints;
+            $covered = $s['project_ids'] ?? $active_ids;
+            if ($project_id && !in_array((int) $project_id, $covered, true)) {
+                continue;
+            }
+            if ($accessible !== null && !array_intersect($covered, $accessible)) {
+                continue;
+            }
+            $out[$sid] = $s;
+        }
+
+        return $out;
+    }
+
+    // ── "All projects" sprints ──
+
+    /** Whether a (raw or narrowed) sprint row is an "all projects" sprint. */
+    public static function isAllProjects(array $s)
+    {
+        if (array_key_exists('_all_projects', $s)) {
+            return (bool) $s['_all_projects'];
+        }
+        return array_key_exists('project_ids', $s) && $s['project_ids'] === null;
+    }
+
+    /**
+     * The projects a sprint covers: its own list, or every active project for
+     * an "all projects" sprint — the rule of pmSprint::getCoveredProjectIds().
+     *
+     * @return int[]
+     */
+    public static function coveredProjectIds(array $s)
+    {
+        if (array_key_exists('project_ids', $s) && $s['project_ids'] === null) {
+            return self::activeProjectIds();
+        }
+        return array_map('intval', (array) ($s['project_ids'] ?? array()));
+    }
+
+    /** @return int[] ids of active projects — what an "all projects" sprint covers. */
+    public static function activeProjectIds()
+    {
+        return array_map(function ($p) {
+            return (int) $p['id'];
+        }, (new pmProjectModel())->getActiveProjects());
     }
 
     /**
@@ -230,6 +273,35 @@ class pmMcpSprintHelper
     {
         if (!pmSprint::canEdit(wa()->getUser()->getId(), $project_ids)) {
             throw new waRightsException(_wp('You need the sprint.edit permission in at least one of these projects.'));
+        }
+    }
+
+    /**
+     * Require the sprint.edit permission in EVERY one of the given projects
+     * (pm app-admin passes) — pm's rule for creating a sprint for a project
+     * set, changing its composition and deleting it (pm #595, rules 1, 3, 6).
+     *
+     * @param int[]  $project_ids
+     * @param string $message  Error text for the access_denied response.
+     * @throws waRightsException  Mapped to access_denied by safeExecute().
+     */
+    public static function requireCanEditAll(array $project_ids, $message)
+    {
+        if (!pmSprint::canEditAll(wa()->getUser()->getId(), array_values($project_ids))) {
+            throw new waRightsException($message);
+        }
+    }
+
+    /**
+     * Require pm app-admin: only the app administrator may make a sprint
+     * "all projects" or change the composition of one (pm #595, rules 2, 3).
+     *
+     * @throws waRightsException
+     */
+    public static function requireAppAdmin($message)
+    {
+        if (!wa()->getUser()->isAdmin('pm')) {
+            throw new waRightsException($message);
         }
     }
 

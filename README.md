@@ -15,11 +15,11 @@ project wiki through the MCP JSON-RPC protocol.
   (`registerTools`), `mcp_plugin_rights_v1` (`registerRights`) and
   `mcp_skill_registry_v1` (`registerSkills`).
 - `lib/config/requirements.php` — requires `app.mcp >= 1.2.0` (the release that
-  introduced the skill registry) and `app.pm >= 0.50.0` (the version this
-  plugin is developed and tested against; `pm_task.sprint_id` became
-  `NOT NULL DEFAULT 0` in 0.33.5, and the cross-project sprint API —
-  `pmSprint::canEdit(array)` and the 4-argument `pmSprint::save()` — first
-  appeared in 0.26.0).
+  introduced the skill registry) and `app.pm >= 1.0.0` (the version this
+  plugin is developed and tested against: per-project default task types,
+  "all projects" sprints and the per-operation sprint rights incl.
+  `pmSprint::canEditAll()`; `pm_task.sprint_id` became `NOT NULL DEFAULT 0` in
+  0.33.5).
 - `skills/*.md` — the agent-facing documentation published through the skill
   registry (see [Skills](#skills)).
 - `lib/mcpPm.plugin.php` — `mcpPmPlugin extends mcpPlugin`. Eager-loads all
@@ -46,6 +46,13 @@ project wiki through the MCP JSON-RPC protocol.
 Sprint reads (`list_sprints`, `get_sprint`) stay in `pm.read` for backward
 compatibility — moving them into `pm.sprints` would silently narrow the scope
 of every MCP token already issued.
+
+Sprint write rights mirror pm 1.0.0 (#595): a sprint for a set of projects
+needs `sprint.edit` in every one of them, and so does adding/removing a
+project or deleting the sprint; its fields, activation and completion need it
+in at least one covered project; an "all projects" sprint (`all_projects`,
+covering every active project) is created or re-scoped by the pm
+administrator only.
 
 The tool name equals its right name (helpdesk convention): a token scope
 lists tool names directly.
@@ -97,6 +104,21 @@ a task card names the other task as `related_task_id` /
 `related_full_number` / `related_project_id` with its `relation` and
 `inverse_relation`.
 
+## Task types
+
+pm requires a type on every task, and only the types of the workflow's type
+group are accepted. `pm_get_workflow` (and the `workflows` block of
+`pm_get_project`) lists them per workflow as `types` — `{slug, name, color,
+icon}`, the same shape as pm's REST `pm.workflow.get` — together with the
+project's `default_type_slug` for that workflow (set in the project settings,
+`null` when not set or no longer valid). `pm_list_statuses` with `workflow_id`
+returns `types` too, without a default (there is no project there).
+
+`pm_create_task` resolves an omitted `type_slug` the way pm's own task form
+does: the project's default type for the workflow, else the workflow's only
+type; otherwise it fails with `invalid_param` and `available_types`. pm's REST
+`pm.task.create` does not apply the project default.
+
 ## Skills
 
 A tool schema can say what an argument is; it cannot say that a status change
@@ -137,7 +159,7 @@ latter survives.
 ## Dependencies
 
 - Webasyst MCP app (`app.mcp` >= 1.2.0)
-- Webasyst Project Management app (`app.pm` >= 0.33.1)
+- Webasyst Project Management app (`app.pm` >= 1.0.0)
 
 ## Activation
 
