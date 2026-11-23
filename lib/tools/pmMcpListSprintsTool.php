@@ -16,7 +16,7 @@ class pmMcpListSprintsTool extends pmMcpToolBase
 
     public function getName()        { return 'pm_list_sprints'; }
     public function getRight()       { return 'pm_list_sprints'; }
-    public function getDescription() { return _wp('List sprints you can access (active first, then planned, then completed) with automation settings. Omit project_id to span every project you can access; a sprint spanning several projects is returned once. Projects you cannot access are stripped from project_ids/workflows on each row — hidden_project_count and access_narrowed flag when that happened. Paginated. Backlog tasks are listed via pm_list_tasks with sprint_id=-1.'); }
+    public function getDescription() { return _wp('List sprints you can access (active first, then planned, then completed) with automation settings. Omit project_id to span every project you can access; a sprint spanning several projects is returned once. All-projects sprints (all_projects: true) cover every active project, so they appear under any project_id. Projects you cannot access are stripped from project_ids/workflows on each row — hidden_project_count and access_narrowed flag when that happened. Paginated. Backlog tasks are listed via pm_list_tasks with sprint_id=-1.'); }
 
     public function getInputSchema()
     {

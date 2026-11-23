@@ -43,8 +43,26 @@ function teardown_project(int $pid): void
         }
         $db->query("DELETE FROM pm_task WHERE id IN ({$in})");
     }
+    // A sprint left with no pm_sprint_project rows is an "all projects"
+    // sprint in pm >= 0.75 — drop sprints that would be left that way instead
+    // of silently turning them into one.
+    $sprint_ids = array_map('intval', $db->query(
+        "SELECT sprint_id FROM pm_sprint_project WHERE project_id = i:p",
+        ['p' => $pid]
+    )->fetchAll(null, true));
+    $db->query("DELETE FROM pm_sprint_project WHERE project_id = i:p", ['p' => $pid]);
+    foreach ($sprint_ids as $sid) {
+        $left = (int) $db->query("SELECT COUNT(*) FROM pm_sprint_project WHERE sprint_id = i:s", ['s' => $sid])->fetchField();
+        if ($left === 0) {
+            foreach (['pm_sprint_fill_status', 'pm_sprint_workflow'] as $t) {
+                $db->query("DELETE FROM {$t} WHERE sprint_id = i:s", ['s' => $sid]);
+            }
+            $db->query("UPDATE pm_task SET sprint_id = 0 WHERE sprint_id = i:s", ['s' => $sid]);
+            $db->query("DELETE FROM pm_sprint WHERE id = i:s", ['s' => $sid]);
+        }
+    }
     foreach (['pm_milestone', 'pm_tag', 'pm_project_workflows', 'pm_project_user',
-              'pm_sprint_project', 'pm_activity_log'] as $t) {
+              'pm_activity_log'] as $t) {
         $db->query("DELETE FROM {$t} WHERE project_id = i:p", ['p' => $pid]);
     }
     $db->query("DELETE FROM pm_project WHERE id = i:p", ['p' => $pid]);

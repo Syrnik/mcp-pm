@@ -28,8 +28,11 @@ return array(
     //
     // The per-project default task type of a workflow
     // (pm_project_workflows.default_type_slug, used by pm_get_workflow,
-    // pm_get_project and pm_create_task — PMCP-693) appeared in 0.75.0; the
-    // floor is the 1.0.0 release this plugin is developed and tested against.
+    // pm_get_project and pm_create_task — PMCP-693) and "all projects"
+    // sprints (no pm_sprint_project rows, PMCP-694) appeared in 0.75.0; the
+    // per-operation sprint rights the sprint tools mirror, including
+    // pmSprint::canEditAll(), in 1.0.0
+    // (#593/#595) — the release this plugin is developed and tested against.
     'app.pm'  => array(
         'version' => '>=1.0.0',
         'strict'  => true,

@@ -334,7 +334,13 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
         // The project has neither, so the options are empty — which is exactly
         // the fact the old bare message hid.
         $this->assertSame(array(), $r['available_milestones']);
-        $this->assertSame(array(), $r['available_sprints']);
+        // Sprints: none of its own — but any "all projects" sprint of the
+        // install covers it too and is rightly offered (pm >= 0.75).
+        $own_or_global = array_values(array_map(function ($s) {
+            return (int) $s['id'];
+        }, (new pmSprintModel())->getByProject($this->project_id)));
+        $this->assertSame($own_or_global, array_column($r['available_sprints'], 'id'));
+        $this->assertNotContains($foreign_sprint_id, array_column($r['available_sprints'], 'id'));
 
         // And the same references are refused on update.
         $task = $this->makeTask('ZZ Foreign refs target');

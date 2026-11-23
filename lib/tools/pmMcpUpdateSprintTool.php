@@ -17,6 +17,12 @@
  * sprint from projects it has no role in (pm's own saveOneAction has this
  * hole — it trusts the posted project_ids alone).
  *
+ * Rights mirror pm #595: the sprint fields need sprint.edit in at least one
+ * covered project; every project added or removed needs it too; turning a
+ * sprint into an "all projects" one (all_projects: true), or changing the
+ * projects of one, is for the pm administrator only; workflow selections of
+ * projects where the caller lacks sprint.edit keep their stored value.
+ *
  * status is deliberately not settable here: pm lets saveOneAction flip it
  * directly, bypassing the activate/complete gates and every side effect
  * (auto-fill, auto-create-next, move-unfinished). Use pm_manage_sprint.
@@ -28,7 +34,7 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
 
     public function getName()        { return 'pm_update_sprint'; }
     public function getRight()       { return 'pm_update_sprint'; }
-    public function getDescription() { return _wp('Update a sprint\'s name, goal, dates, project set, workflow selection or auto-fill statuses. Only supplied fields change. project_ids/workflows/fill_status_ids are each a replacement set for the key you pass — omit the key to keep the current value; projects you cannot access are never removed. Status is not settable here — use pm_manage_sprint to activate, complete or delete. Requires the sprint.edit permission. Returns the updated sprint card.'); }
+    public function getDescription() { return _wp('Update a sprint\'s name, goal, dates, project set, workflow selection or auto-fill statuses. Only supplied fields change. project_ids/workflows/fill_status_ids are each a replacement set for the key you pass — omit the key to keep the current value; projects you cannot access are never removed. all_projects: true makes the sprint cover every active project; it and changing the projects of such a sprint are for the pm administrator only. Status is not settable here — use pm_manage_sprint to activate, complete or delete. Requires the sprint.edit permission in at least one covered project, and in every project added or removed. Returns the updated sprint card.'); }
 
     public function getInputSchema()
     {
@@ -43,6 +49,10 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
                     'uniqueItems' => true,
                     'items'       => array('type' => 'integer', 'minimum' => 1),
                     'description' => 'Replacement set of projects this sprint spans — everything omitted from the list is removed. Omit this key entirely to keep the current set. Projects you cannot access are never removed, whether or not you list them.',
+                ),
+                'all_projects' => array(
+                    'type'        => 'boolean',
+                    'description' => 'true: make this an "all projects" sprint covering every active project (pm administrator only; cannot be combined with project_ids or workflows). false: back to an explicit set — project_ids is then required (pm administrator only for an all-projects sprint). Omit to keep the current mode.',
                 ),
                 'name' => array('type' => 'string', 'minLength' => 1, 'description' => 'Sprint name.'),
                 'goal' => array('type' => 'string', 'description' => 'Sprint goal (empty string clears it).'),
@@ -87,18 +97,47 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
                 return $this->softFail('not_found', _wp('Sprint not found.'));
             }
 
-            $accessible  = pmMcpProjectHelper::accessibleProjectIds();
-            $stored_pids = array_map('intval', $stored['project_ids'] ?? array());
-            $hidden      = $accessible === null ? array() : array_values(array_diff($stored_pids, $accessible));
+            $accessible   = pmMcpProjectHelper::accessibleProjectIds();
+            $stored_all   = pmMcpSprintHelper::isAllProjects($stored);
+            // Explicit list ([] for an "all projects" sprint) and what the
+            // sprint actually covers (every active project in that mode).
+            $stored_pids  = array_map('intval', (array) ($stored['project_ids'] ?? array()));
+            $covered_now  = pmMcpSprintHelper::coveredProjectIds($stored);
+            $hidden       = $accessible === null ? array() : array_values(array_diff($stored_pids, $accessible));
 
-            if ($accessible !== null && !array_intersect($stored_pids, $accessible)) {
+            if ($accessible !== null && !array_intersect($covered_now, $accessible)) {
                 return $this->softFail('access_denied', _wp('You are not a member of any of this sprint\'s projects.'));
             }
 
             $updated_fields = array();
 
+            // ── composition mode: all_projects / project_ids ──
+            $has_all_arg = array_key_exists('all_projects', $arguments);
+            $want_all = $has_all_arg ? $this->argBool($arguments, 'all_projects') : null;
+            if ($want_all === true && array_key_exists('project_ids', $arguments)) {
+                return $this->softFail('invalid_param', _wp('Pass either project_ids or all_projects: true, not both.'));
+            }
+            if ($want_all === false && !array_key_exists('project_ids', $arguments)) {
+                return $this->softFail('invalid_param', _wp('all_projects: false needs project_ids: at least one project is required.'));
+            }
+            if ($has_all_arg) {
+                $updated_fields[] = 'all_projects';
+            }
+            // pm #595 rules 2-3: making a sprint "all projects", or changing
+            // the composition of one, is the pm administrator's call. Keeping
+            // the mode as it is needs nothing beyond the field rights.
+            if ($want_all === true && !$stored_all) {
+                pmMcpSprintHelper::requireAppAdmin(_wp('Only the pm administrator can set a sprint to all projects.'));
+            }
+            if ($stored_all && array_key_exists('project_ids', $arguments)) {
+                pmMcpSprintHelper::requireAppAdmin(_wp('Only the pm administrator can change the projects of an all-projects sprint.'));
+            }
+            $final_all = $want_all === true || ($stored_all && !array_key_exists('project_ids', $arguments));
+
             // ── project_ids: merge ──
-            if (array_key_exists('project_ids', $arguments)) {
+            if ($final_all) {
+                $final = null;
+            } elseif (array_key_exists('project_ids', $arguments)) {
                 $updated_fields[] = 'project_ids';
                 $raw = is_array($arguments['project_ids']) ? $arguments['project_ids'] : array();
                 if (!$raw) {
@@ -118,24 +157,63 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
                 $final = $stored_pids;
             }
 
-            pmMcpSprintHelper::requireCanEdit(array_values(array_unique(array_merge($stored_pids, $final))));
+            // ── rights (pm #595) ──
+            // What the sprint will cover after the save.
+            $covered_final = $final === null ? pmMcpSprintHelper::activeProjectIds() : $final;
+            if ($final !== null) {
+                // Rule 3: every project added or removed needs sprint.edit.
+                // (Hidden projects were merged back above, so they never count
+                // as removed.) Leaving "all projects" is admin-only, checked above.
+                $changed = $stored_all ? array() : array_values(array_unique(array_merge(
+                    array_diff($stored_pids, $final),
+                    array_diff($final, $stored_pids)
+                )));
+                if ($changed) {
+                    pmMcpSprintHelper::requireCanEditAll($changed, _wp('Changing the projects of a sprint requires the sprint.edit permission in every project added or removed.'));
+                }
+            }
+            // Rule 5: the sprint's own fields need sprint.edit in at least one
+            // project it covers.
+            pmMcpSprintHelper::requireCanEdit($covered_final);
 
             // ── workflows: merge ──
-            if (array_key_exists('workflows', $arguments)) {
+            $warnings = array();
+            if ($final === null) {
+                if (!empty($arguments['workflows'])) {
+                    return $this->softFail('invalid_param', _wp('An all-projects sprint has no workflow selection: it uses every workflow of every project. Omit workflows.'));
+                }
+                $workflow_items = array();
+            } elseif (array_key_exists('workflows', $arguments)) {
                 $updated_fields[] = 'workflows';
-                $editable_now = array_values(array_diff($final, $hidden));
-                $workflow_items = pmMcpSprintHelper::resolveWorkflowItems($arguments['workflows'], $editable_now, $error);
+                // pm #595 rule 3: the selection of a project the caller cannot
+                // manage (no sprint.edit there — hidden projects included)
+                // keeps its stored value; whatever was passed for it is ignored.
+                $editable = pmMcpSprintHelper::editableProjectIds();
+                $managed = $editable === null ? $final : array_values(array_intersect($final, $editable));
+                $workflow_items = pmMcpSprintHelper::resolveWorkflowItems($arguments['workflows'], $managed, $error);
                 if ($workflow_items === null) {
                     return $this->softFail($error[0], $error[1], $error[2]);
                 }
-                // Projects hidden from this caller keep whatever was stored —
-                // the caller cannot see, let alone re-supply, their selection.
+                $ignored = array();
+                foreach ((is_array($arguments['workflows']) ? $arguments['workflows'] : array()) as $entry) {
+                    $pid = is_array($entry) ? (int) ($entry['project_id'] ?? 0) : 0;
+                    if ($pid && in_array($pid, $final, true) && !in_array($pid, $managed, true)) {
+                        $ignored[$pid] = $pid;
+                    }
+                }
                 foreach (($stored['workflows'] ?? array()) as $pid => $wf_ids) {
-                    if (in_array((int) $pid, $hidden, true)) {
+                    if (in_array((int) $pid, $final, true) && !in_array((int) $pid, $managed, true)) {
                         foreach ((array) $wf_ids as $wf_id) {
                             $workflow_items[] = array('project_id' => (int) $pid, 'workflow_id' => $wf_id);
                         }
                     }
+                }
+                if ($ignored) {
+                    $warnings[] = array(
+                        'code'        => 'workflows_locked',
+                        'message'     => _wp('You lack the sprint.edit permission in some of the listed projects; their workflow selection was kept as stored.'),
+                        'project_ids' => array_values($ignored),
+                    );
                 }
             } else {
                 $workflow_items = array();
@@ -145,8 +223,8 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
                     }
                 }
             }
-            $workflow_items = array_values(array_filter($workflow_items, function ($item) use ($final) {
-                return in_array((int) $item['project_id'], $final, true);
+            $workflow_items = array_values(array_filter($workflow_items, function ($item) use ($covered_final) {
+                return in_array((int) $item['project_id'], $covered_final, true);
             }));
 
             // ── fill_status_ids: merge ──
@@ -155,7 +233,7 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
                 $updated_fields[] = 'fill_status_ids';
                 $raw = is_array($arguments['fill_status_ids']) ? $arguments['fill_status_ids'] : array();
                 $fill_status_ids = array_values(array_unique(array_map('intval', $raw)));
-                $allowed = pmMcpSprintHelper::allowedFillStatusIds($final, $workflow_items);
+                $allowed = pmMcpSprintHelper::allowedFillStatusIds($covered_final, $workflow_items);
                 if (!pmMcpSprintHelper::validateFillStatusIds($fill_status_ids, $allowed, $error)) {
                     return $this->softFail($error[0], $error[1], $error[2]);
                 }
@@ -165,7 +243,7 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
                 // whenever the project/workflow set had shrunk. Flag drift as a
                 // warning instead (see below).
                 $fill_status_ids = array_map('intval', $stored['fill_status_ids'] ?? array());
-                $allowed = pmMcpSprintHelper::allowedFillStatusIds($final, $workflow_items);
+                $allowed = pmMcpSprintHelper::allowedFillStatusIds($covered_final, $workflow_items);
                 $stale_fill_status_ids = array_values(array_diff($fill_status_ids, array_keys($allowed)));
             }
 
@@ -225,8 +303,9 @@ class pmMcpUpdateSprintTool extends pmMcpToolBase
             }
 
             // ── shrink warning: projects leaving the sprint don't unlink their tasks ──
-            $warnings = array();
-            $removed = array_values(array_diff($stored_pids, $final));
+            // Diffed on the covered sets, so leaving "all projects" for a
+            // narrower list is caught too.
+            $removed = array_values(array_diff($covered_now, $covered_final));
             if ($removed) {
                 $affected = pmMcpSprintHelper::countTasksIn($sprint_id, $removed);
                 if ($affected['count'] > 0) {

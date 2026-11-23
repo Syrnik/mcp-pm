@@ -3,10 +3,14 @@
 /**
  * pm_create_sprint — create a sprint spanning one or more projects, with its
  * per-project workflow subset and auto-fill statuses. New sprints are always
- * created "planned"; use pm_manage_sprint to activate one. Requires the
- * sprint.edit permission in at least one of the given projects, and
- * membership in every one of them (a caller cannot attach a project it
- * cannot access, unlike pm's own saveOneAction).
+ * created "planned"; use pm_manage_sprint to activate one.
+ *
+ * Rights mirror pm #595: a sprint for an explicit project set needs the
+ * sprint.edit permission in every project of the set (rule 1) — and
+ * membership in each, so a caller cannot attach a project it cannot access;
+ * an "all projects" sprint (all_projects: true, no pm_sprint_project rows,
+ * covering every active project) can only be created by the pm app admin
+ * (rule 2).
  */
 class pmMcpCreateSprintTool extends pmMcpToolBase
 {
@@ -15,20 +19,24 @@ class pmMcpCreateSprintTool extends pmMcpToolBase
 
     public function getName()        { return 'pm_create_sprint'; }
     public function getRight()       { return 'pm_create_sprint'; }
-    public function getDescription() { return _wp('Create a sprint spanning one or more projects, with a per-project workflow subset and auto-fill statuses. Always created "planned" — use pm_manage_sprint to activate it. Requires the sprint.edit permission in at least one project and membership in every project listed. Returns the created sprint card.'); }
+    public function getDescription() { return _wp('Create a sprint spanning one or more projects, with a per-project workflow subset and auto-fill statuses. Pass project_ids, or all_projects: true for a sprint covering every active project (pm administrator only). Always created "planned" — use pm_manage_sprint to activate it. Requires the sprint.edit permission in every project listed. Returns the created sprint card.'); }
 
     public function getInputSchema()
     {
         return array(
             'type'       => 'object',
-            'required'   => array('project_ids', 'name'),
+            'required'   => array('name'),
             'properties' => array(
                 'project_ids' => array(
                     'type'        => 'array',
                     'minItems'    => 1,
                     'uniqueItems' => true,
                     'items'       => array('type' => 'integer', 'minimum' => 1),
-                    'description' => 'Projects this sprint spans. A sprint may cover several projects; you must be a member of every one you list.',
+                    'description' => 'Projects this sprint spans. A sprint may cover several projects; you need the sprint.edit permission in every one you list. Required unless all_projects is true.',
+                ),
+                'all_projects' => array(
+                    'type'        => 'boolean',
+                    'description' => 'Create an "all projects" sprint: it covers every active project, including ones created later. pm administrator only. Cannot be combined with project_ids or workflows.',
                 ),
                 'name' => array('type' => 'string', 'minLength' => 1, 'description' => 'Sprint name.'),
                 'goal' => array('type' => 'string', 'description' => 'Sprint goal.'),
@@ -67,18 +75,32 @@ class pmMcpCreateSprintTool extends pmMcpToolBase
     public function execute(array $arguments, waSystem $system)
     {
         return $this->safeExecute(function () use ($arguments) {
+            $all_projects = $this->argBool($arguments, 'all_projects');
             $project_ids_raw = is_array($arguments['project_ids'] ?? null) ? $arguments['project_ids'] : array();
             $project_ids = array_values(array_unique(array_filter(array_map('intval', $project_ids_raw), function ($id) {
                 return $id > 0;
             })));
-            if (!$project_ids) {
-                return $this->softFail('invalid_param', _wp('At least one project is required.'));
-            }
 
-            foreach ($project_ids as $pid) {
-                pmMcpProjectHelper::loadAccessibleProject($pid);
+            if ($all_projects) {
+                if ($project_ids_raw) {
+                    return $this->softFail('invalid_param', _wp('Pass either project_ids or all_projects, not both.'));
+                }
+                if (!empty($arguments['workflows'])) {
+                    return $this->softFail('invalid_param', _wp('An all-projects sprint has no workflow selection: it uses every workflow of every project. Omit workflows.'));
+                }
+                pmMcpSprintHelper::requireAppAdmin(_wp('Only the pm administrator can create an all-projects sprint.'));
+                // What the sprint covers, for fill-status validation below.
+                $scope_ids = pmMcpSprintHelper::activeProjectIds();
+            } else {
+                if (!$project_ids) {
+                    return $this->softFail('invalid_param', _wp('At least one project is required (or pass all_projects: true).'));
+                }
+                foreach ($project_ids as $pid) {
+                    pmMcpProjectHelper::loadAccessibleProject($pid);
+                }
+                pmMcpSprintHelper::requireCanEditAll($project_ids, _wp('Creating a sprint requires the sprint.edit permission in every project it spans.'));
+                $scope_ids = $project_ids;
             }
-            pmMcpSprintHelper::requireCanEdit($project_ids);
 
             $name = strip_tags($this->argString($arguments, 'name'));
             if ($name === '') {
@@ -86,7 +108,7 @@ class pmMcpCreateSprintTool extends pmMcpToolBase
             }
 
             $workflow_items = array();
-            if (array_key_exists('workflows', $arguments)) {
+            if (!$all_projects && array_key_exists('workflows', $arguments)) {
                 $workflow_items = pmMcpSprintHelper::resolveWorkflowItems($arguments['workflows'], $project_ids, $error);
                 if ($workflow_items === null) {
                     return $this->softFail($error[0], $error[1], $error[2]);
@@ -97,7 +119,7 @@ class pmMcpCreateSprintTool extends pmMcpToolBase
             if (array_key_exists('fill_status_ids', $arguments)) {
                 $raw = is_array($arguments['fill_status_ids']) ? $arguments['fill_status_ids'] : array();
                 $fill_status_ids = array_values(array_unique(array_map('intval', $raw)));
-                $allowed = pmMcpSprintHelper::allowedFillStatusIds($project_ids, $workflow_items);
+                $allowed = pmMcpSprintHelper::allowedFillStatusIds($scope_ids, $workflow_items);
                 if (!pmMcpSprintHelper::validateFillStatusIds($fill_status_ids, $allowed, $error)) {
                     return $this->softFail($error[0], $error[1], $error[2]);
                 }
@@ -121,11 +143,15 @@ class pmMcpCreateSprintTool extends pmMcpToolBase
                 'auto_fill'        => $this->argBool($arguments, 'auto_fill') ? 1 : 0,
             );
 
-            $sprint_id = pmSprint::save($data, $project_ids, $workflow_items, $fill_status_ids);
+            // null project set = "all projects" (no pm_sprint_project rows).
+            $sprint_id = pmSprint::save($data, $all_projects ? null : $project_ids, $workflow_items, $fill_status_ids);
 
             // Matches the pm UI: the activity feed entry lives on the first
-            // listed project only (pmSprints.actions.php::saveOneAction).
-            pmTask::log($project_ids[0], null, $this->getUserId(), 'sprint_created', array('sprint_name' => $name));
+            // listed project only, and an all-projects sprint is not logged
+            // at all (pmSprints.actions.php::saveOneAction).
+            if (!$all_projects) {
+                pmTask::log($project_ids[0], null, $this->getUserId(), 'sprint_created', array('sprint_name' => $name));
+            }
 
             $card = pmMcpSprintHelper::cardById($sprint_id, pmMcpProjectHelper::accessibleProjectIds());
 

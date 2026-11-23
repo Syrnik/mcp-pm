@@ -107,6 +107,14 @@ subset. `project_id` on a sprint row is a deprecated convenience alias for
 "the first project *you* can see" — use `project_ids` for the full set, and
 never treat `project_id` as authoritative.
 
+**"All projects" sprints.** A sprint can also cover *every active project*
+(`all_projects: true` on the row/card) — pm stores it with no project links,
+so it covers projects created later too, but not ones that are planned or
+completed. It shows up under any `project_id` and for any member of an active
+project; its `project_ids` lists the covered projects *you* can see
+(`hidden_project_count` the rest), and its `workflows` are "all workflows of
+each project" (it has no workflow selection).
+
 - `pm_list_sprints` takes an *optional* `project_id` (omit it to span every
   project you can access — a sprint spanning several is listed once),
   `status`, and `limit`/`offset`. Sprints come back **active first, then
@@ -123,8 +131,9 @@ never treat `project_id` as authoritative.
 
 ### Creating and updating
 
-`pm_create_sprint` needs `project_ids` (non-empty) and `name`; it always
-starts `planned`. `workflows` and `fill_status_ids` are optional — omit
+`pm_create_sprint` needs `name` and either `project_ids` (non-empty) or
+`all_projects: true` — not both; it always starts `planned`. An all-projects
+sprint takes no `workflows`. `workflows` and `fill_status_ids` are optional — omit
 `workflows` for a project and it gets every workflow attached to that
 project; a `fill_status_id` must belong to the (selected-or-default)
 workflows of at least one listed project, or the call is refused with
@@ -146,6 +155,10 @@ untouched; only pass it when you mean to replace the whole set.** Concretely:
 - A project you cannot access is *never* dropped by this tool, even if your
   `project_ids` omits it — you cannot use a partial view to detach a sprint
   from a project you have no role in.
+- `all_projects` switches the mode: `true` makes the sprint cover every
+  active project (no `project_ids`, no `workflows`); `false` goes back to an
+  explicit set and then needs `project_ids`. Omit it to keep the mode — a
+  rename of an all-projects sprint stays all-projects.
 - `status` is **not** a field of this tool. Activating, completing or
   deleting a sprint goes through `pm_manage_sprint` — flipping status directly
   would skip auto-fill, the completed-sprint rename, and move-unfinished.
@@ -155,6 +168,20 @@ untouched; only pass it when you mean to replace the whole set.** Concretely:
   (`tasks_hidden_from_board`) with the affected task count; re-add the
   project or move the tasks with `pm_update_task` (`sprint_id: 0`) instead of
   ignoring the warning.
+
+### Who may do what (mirrors pm)
+
+| Operation | Needs |
+|---|---|
+| Create for a set of projects | `sprint.edit` in **every** project of the set |
+| Create an all-projects sprint, switch a sprint to all projects, change the projects of an all-projects sprint | pm administrator |
+| Change name/goal/dates/automation, activate, complete | `sprint.edit` in at least one covered project |
+| Add or remove a project | `sprint.edit` in every project added or removed |
+| Change the workflow selection of a project | `sprint.edit` in that project — otherwise its stored selection is kept and `warnings` says `workflows_locked` |
+| Delete | `sprint.edit` in **every** covered project — for an all-projects sprint, effectively the pm administrator |
+
+`can_edit` on a sprint row/card is the "at least one covered project" right.
+A refusal comes back as `access_denied` naming the missing right.
 
 ### Lifecycle: activate, complete, delete
 
