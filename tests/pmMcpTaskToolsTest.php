@@ -437,6 +437,62 @@ class pmMcpTaskToolsTest extends pmMcpIntegrationTestCase
     }
 
     /**
+     * PMCP-693: with no type_slug, the project's default type for the
+     * workflow (pm_project_workflows.default_type_slug) is used, as in
+     * pm's own task form. Pick a non-first type so the test cannot pass by
+     * accident.
+     */
+    public function testCreateTaskUsesProjectDefaultType(): void
+    {
+        $types = $this->workflowTypeSlugs();
+        $this->assertGreaterThan(1, count($types), 'fixture assumption: more than one type');
+        $default = $types[1];
+        $this->setDefaultType($this->workflowId(), $default);
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ Default type',
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($default, $r['task']['type_slug']);
+    }
+
+    /** An explicit type_slug wins over the project default. */
+    public function testCreateTaskExplicitTypeOverridesDefault(): void
+    {
+        $types = $this->workflowTypeSlugs();
+        $this->setDefaultType($this->workflowId(), $types[1]);
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ Explicit type',
+            'type_slug'  => $types[0],
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($types[0], $r['task']['type_slug']);
+    }
+
+    /**
+     * A stored default that no longer belongs to the workflow's types (stale
+     * setting) is ignored: the call falls through to the old logic and, with
+     * several types, asks for type_slug.
+     */
+    public function testCreateTaskIgnoresStaleDefaultType(): void
+    {
+        $this->assertNotContains('org_task', $this->workflowTypeSlugs(), 'fixture assumption');
+        $this->setDefaultType($this->workflowId(), 'org_task');
+
+        $r = $this->callTool(new pmMcpCreateTaskTool(), array(
+            'project_id' => $this->project_id,
+            'subject'    => 'ZZ Stale default',
+        ));
+        $this->assertFalse($r['ok'], json_encode($r));
+        $this->assertSame('invalid_param', $r['error_code']);
+        $this->assertSame($this->workflowTypeSlugs(), array_column($r['available_types'], 'slug'));
+        $this->assertSame(array(), (new pmTaskModel())->getByField('project_id', $this->project_id, true));
+    }
+
+    /**
      * PMCP-555 item 3: pm_update_task must not silently drop a task's type
      * when the update touches unrelated fields. pmTask::save() falls back to
      * the existing type_slug when the caller omits it (pmTask.class.php

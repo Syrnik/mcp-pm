@@ -5,6 +5,34 @@ All notable changes to the **pm MCP plugin** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Task types and the project's default type are visible** (Task PMCP-693).
+  Workflows in `pm_get_workflow`, `pm_get_project` (and the project card the
+  project write tools return) now carry `types` — the task types the workflow
+  accepts, as `{slug, name, color, icon}`, the shape of pm's REST
+  `pm.workflow.get` — and `default_type_slug`, the project's default task type
+  for that workflow set in the project settings (`null` when unset, or when
+  the stored type no longer belongs to the workflow). `pm_list_statuses` with
+  `workflow_id` returns `types` as well. Before, the only way for an agent to
+  learn the valid types was a failed `pm_create_task`.
+
+### Changed
+- `pm_create_task` without `type_slug` uses the project's default type for
+  the workflow first, as pm's own task form does (pm's REST `pm.task.create`
+  does not), then the workflow's only type; otherwise it fails with
+  `invalid_param` as before. `available_types` in its errors now has the same
+  `{slug, name, color, icon}` shape as `types`.
+- Requires `app.pm` >= 1.0.0 (the per-project default type appeared in
+  0.75.0).
+
+### Fixed
+- `pm_update_project` with `workflow_ids` no longer wipes the per-workflow
+  default task types set in the project settings: pm's model re-inserts the
+  workflow set from scratch, and a plain list of slugs was saved with every
+  default reset to empty.
+
 ## [1.5.0] - 2026-09-14
 
 ### Added

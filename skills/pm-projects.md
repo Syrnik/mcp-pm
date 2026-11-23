@@ -32,8 +32,9 @@ reconnaissance you need:
   `number_separator`) and `workflow_ids`;
 - `participants` — every member with `contact_id`, name and `role`;
 - `workflows` — each attached workflow with its statuses (global id, the
-  workflow-local `name`, the `global_name`, `is_closed`) and the `transitions`
-  matrix;
+  workflow-local `name`, the `global_name`, `is_closed`), the `transitions`
+  matrix, the accepted task `types` (`slug`, `name`, `color`, `icon`) and the
+  project's `default_type_slug` for it (`null` when not set);
 - `milestones`.
 
 `pm_list_projects` returns the short form and takes an optional
@@ -45,8 +46,11 @@ Statuses are **global to the installation**; a workflow decides which of them
 it uses, what they are called locally, and which transitions are allowed.
 
 - `pm_list_statuses` → every global status. Pass `workflow_id` to also get that
-  workflow's local names and transition matrix.
-- `pm_get_workflow` → the same for every workflow attached to one project.
+  workflow's local names, transition matrix and accepted task `types`.
+- `pm_get_workflow` → the same for every workflow attached to one project, plus
+  the project's `default_type_slug` per workflow — the type `pm_create_task`
+  uses when you omit `type_slug`. The default itself is set in the pm backend
+  only.
 
 A status's `is_closed` flag is what marks a task as finished — there is no
 separate "closed" field on a task.
@@ -70,7 +74,8 @@ only the keys you send change. Two shapes to keep straight:
 
 - `description`, `start_date`, `end_date` are cleared with an **empty string**;
 - `workflow_ids` is a **replacement set**, not an addition, and must be
-  non-empty;
+  non-empty; the default task type of every workflow that stays in the set is
+  kept;
 - `owner_contact_id` reassigns ownership — do this before trying to remove the
   current owner from the project.
 

@@ -8,7 +8,7 @@ class pmMcpListStatusesTool extends pmMcpToolBase
 {
     public function getName()        { return 'pm_list_statuses'; }
     public function getRight()       { return 'pm_list_statuses'; }
-    public function getDescription() { return _wp('List global task statuses. Pass workflow_id to also get that workflow\'s statuses (with local names) and transition matrix.'); }
+    public function getDescription() { return _wp('List global task statuses. Pass workflow_id to also get that workflow\'s statuses (with local names), transition matrix and accepted task types.'); }
 
     public function getInputSchema()
     {

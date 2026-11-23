@@ -14,6 +14,7 @@ msgstr ""
 "X-Poedit-Basepath: utf-8\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: .\n"
+"Language: ru_RU\n"
 
 msgid "Project not found."
 msgstr "Проект не найден."
@@ -758,3 +759,15 @@ msgstr "type_slug «%s» недопустим для этого воркфлоу
 
 msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see, and stale_link_count how many link rows point at a task that no longer exists. The linked record's own name is only included once you can see at least one linked task."
 msgstr "Находит задачи pm, связанные с записью другого интегрированного приложения (заявка helpdesk, сделка crm, заказ shop). Возвращает только задачи из доступных вам проектов; hidden_count показывает, сколько ещё существует в недоступных проектах, а stale_link_count — сколько строк связи указывает на уже удалённую задачу. Название самой связанной записи включается только если вам видна хотя бы одна связанная задача."
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug may be omitted when the project has a default task type for the workflow or the workflow accepts exactly one type (pm rejects every task with no type; the accepted types and the default are in pm_get_workflow); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr "Создаёт задачу в проекте. Требует членства в проекте с правом task.create. workflow_id обязателен, если у проекта не ровно один воркфлоу; type_slug можно не указывать, если у проекта задан тип задачи по умолчанию для воркфлоу или воркфлоу допускает ровно один тип (pm отвергает любую задачу без типа; допустимые типы и тип по умолчанию — в pm_get_workflow); исполнитель, веха и спринт необязательны — не указывайте их (или передайте 0), чтобы оставить пустыми. Теги можно задать тем же вызовом через поле tags, а связи с helpdesk/crm/shop-записями — через external_links. Возвращает карточку созданной задачи."
+
+msgid "type_slug is required: the project has no default task type for this workflow and more than one type is available; see available_types."
+msgstr "type_slug обязателен: у проекта не задан тип задачи по умолчанию для этого воркфлоу, а доступно более одного типа; см. available_types."
+
+msgid "Get the workflows of a project: each workflow's statuses (with local names), transition matrix, accepted task types (types) and the project's default task type for it (default_type_slug, null when not set). Requires project membership."
+msgstr "Возвращает воркфлоу проекта: статусы каждого воркфлоу (с локальными именами), матрицу переходов, допустимые типы задач (types) и тип задачи по умолчанию в проекте (default_type_slug, null, если не задан). Требует членства в проекте."
+
+msgid "List global task statuses. Pass workflow_id to also get that workflow's statuses (with local names), transition matrix and accepted task types."
+msgstr "Список глобальных статусов задач. Передайте workflow_id, чтобы также получить статусы этого воркфлоу (с локальными именами), матрицу переходов и допустимые типы задач."

@@ -113,6 +113,25 @@ abstract class pmMcpIntegrationTestCase extends TestCase
     }
 
     /**
+     * Set (or clear, with null) the project's default task type for a
+     * workflow — pm_project_workflows.default_type_slug, what pm's project
+     * settings form writes. The row goes away with dropProject().
+     */
+    protected function setDefaultType($workflow_id, $type_slug, $project_id = null)
+    {
+        (new pmProjectWorkflowModel())->updateByField(
+            array('project_id' => (int) ($project_id ?? $this->project_id), 'workflow_id' => (string) $workflow_id),
+            array('default_type_slug' => (string) $type_slug)
+        );
+    }
+
+    /** All type slugs of the test project's workflow, in config order. */
+    protected function workflowTypeSlugs()
+    {
+        return array_column(pmMcpWorkflowHelper::typeOptions(pmWorkflow::getWorkflow($this->workflowId())), 'slug');
+    }
+
+    /**
      * Create a sprint directly through the model and attach it to the given
      * projects (plus, optionally, per-project workflow selections and
      * auto-fill statuses) the same way pmSprint::save() would. Torn down by

@@ -120,7 +120,17 @@ class pmMcpUpdateProjectTool extends pmMcpToolBase
                 pmMcpTaskHelper::resetNumberConfig();
             }
             if ($workflow_ids !== null) {
-                $model->saveWorkflows($project_id, $workflow_ids);
+                // pmProjectWorkflowModel::save() deletes every row and
+                // re-inserts; a plain list of slugs re-inserts them with
+                // default_type_slug = null, wiping the per-workflow default
+                // task types set in the project settings. Carry the stored
+                // default over for every workflow that stays (PMCP-693).
+                $defaults = (new pmProjectWorkflowModel())->getWorkflowsWithTypes($project_id);
+                $workflow_data = array();
+                foreach ($workflow_ids as $wf_id) {
+                    $workflow_data[$wf_id] = $defaults[$wf_id] ?? null;
+                }
+                $model->saveWorkflows($project_id, $workflow_data);
             }
 
             return $this->ok(pmMcpProjectHelper::fullCard($project_id));

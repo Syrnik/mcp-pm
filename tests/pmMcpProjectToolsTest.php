@@ -52,6 +52,64 @@ class pmMcpProjectToolsTest extends pmMcpIntegrationTestCase
         $this->assertArrayHasKey('available_workflows', $r);
     }
 
+    /**
+     * PMCP-693: workflows carry the accepted task types (REST
+     * pm.workflow.get shape) and the project's default_type_slug.
+     */
+    public function testGetWorkflowExposesTypesAndDefault(): void
+    {
+        $wf_id = $this->workflowId();
+        $r = $this->callTool(new pmMcpGetWorkflowTool(), array('project_id' => $this->project_id));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $wf = $r['workflows'][0];
+        $this->assertSame($wf_id, $wf['id']);
+        $this->assertSame($this->workflowTypeSlugs(), array_column($wf['types'], 'slug'));
+        $this->assertSame(array('slug', 'name', 'color', 'icon'), array_keys($wf['types'][0]));
+        $this->assertArrayHasKey('default_type_slug', $wf);
+        $this->assertNull($wf['default_type_slug']);
+
+        $default = $this->workflowTypeSlugs()[1];
+        $this->setDefaultType($wf_id, $default);
+        $r = $this->callTool(new pmMcpGetProjectTool(), array('project_id' => $this->project_id));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($default, $r['workflows'][0]['default_type_slug']);
+
+        // A stale default (type outside the workflow's group) reads as null.
+        $this->setDefaultType($wf_id, 'org_task');
+        $r = $this->callTool(new pmMcpGetWorkflowTool(), array('project_id' => $this->project_id));
+        $this->assertNull($r['workflows'][0]['default_type_slug']);
+    }
+
+    /** pm_list_statuses(workflow_id) has types, but no project → no default. */
+    public function testListStatusesWorkflowHasTypesWithoutDefault(): void
+    {
+        $r = $this->callTool(new pmMcpListStatusesTool(), array('workflow_id' => $this->workflowId()));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($this->workflowTypeSlugs(), array_column($r['workflow']['types'], 'slug'));
+        $this->assertArrayNotHasKey('default_type_slug', $r['workflow']);
+    }
+
+    /**
+     * pm_update_project with workflow_ids used to re-save the workflow set as
+     * a plain list, and pm's model re-inserts it with default_type_slug =
+     * null — silently wiping the defaults set in the project settings.
+     */
+    public function testUpdateProjectWorkflowsKeepsDefaultType(): void
+    {
+        $wf_id = $this->workflowId();
+        $default = $this->workflowTypeSlugs()[1];
+        $this->setDefaultType($wf_id, $default);
+
+        $r = $this->callTool(new pmMcpUpdateProjectTool(), array(
+            'project_id'   => $this->project_id,
+            'workflow_ids' => array($wf_id),
+        ));
+        $this->assertTrue($r['ok'], json_encode($r));
+        $this->assertSame($default, $r['workflows'][0]['default_type_slug']);
+        $stored = (new pmProjectWorkflowModel())->getWorkflowsWithTypes($this->project_id);
+        $this->assertSame($default, $stored[$wf_id]);
+    }
+
     public function testUpdateProjectRejectsEmptyPayload(): void
     {
         $r = $this->callTool(new pmMcpUpdateProjectTool(), array('project_id' => $this->project_id));

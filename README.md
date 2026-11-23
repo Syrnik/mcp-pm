@@ -97,6 +97,21 @@ a task card names the other task as `related_task_id` /
 `related_full_number` / `related_project_id` with its `relation` and
 `inverse_relation`.
 
+## Task types
+
+pm requires a type on every task, and only the types of the workflow's type
+group are accepted. `pm_get_workflow` (and the `workflows` block of
+`pm_get_project`) lists them per workflow as `types` — `{slug, name, color,
+icon}`, the same shape as pm's REST `pm.workflow.get` — together with the
+project's `default_type_slug` for that workflow (set in the project settings,
+`null` when not set or no longer valid). `pm_list_statuses` with `workflow_id`
+returns `types` too, without a default (there is no project there).
+
+`pm_create_task` resolves an omitted `type_slug` the way pm's own task form
+does: the project's default type for the workflow, else the workflow's only
+type; otherwise it fails with `invalid_param` and `available_types`. pm's REST
+`pm.task.create` does not apply the project default.
+
 ## Skills
 
 A tool schema can say what an argument is; it cannot say that a status change
@@ -137,7 +152,7 @@ latter survives.
 ## Dependencies
 
 - Webasyst MCP app (`app.mcp` >= 1.2.0)
-- Webasyst Project Management app (`app.pm` >= 0.33.1)
+- Webasyst Project Management app (`app.pm` >= 1.0.0)
 
 ## Activation
 

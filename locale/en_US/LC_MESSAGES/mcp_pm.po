@@ -14,6 +14,7 @@ msgstr ""
 "X-Poedit-Basepath: utf-8\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: .\n"
+"Language: en_US\n"
 
 msgid "Project not found."
 msgstr ""
@@ -757,4 +758,16 @@ msgid "type_slug \"%s\" is not valid for this workflow; see available_types."
 msgstr ""
 
 msgid "Find pm tasks linked to a record in another integrated app (helpdesk request, crm deal, shop order). Returns only tasks in projects you can access; hidden_count reports how many more exist in projects you cannot see, and stale_link_count how many link rows point at a task that no longer exists. The linked record's own name is only included once you can see at least one linked task."
+msgstr ""
+
+msgid "Create a task in a project. Requires project membership with the task.create permission. workflow_id is required unless the project has exactly one workflow; type_slug may be omitted when the project has a default task type for the workflow or the workflow accepts exactly one type (pm rejects every task with no type; the accepted types and the default are in pm_get_workflow); assignee, milestone and sprint are optional — omit them (or pass 0) to leave them empty. Tags can be set in the same call with the tags field, and links to helpdesk/crm/shop records with external_links. Returns the created task card."
+msgstr ""
+
+msgid "type_slug is required: the project has no default task type for this workflow and more than one type is available; see available_types."
+msgstr ""
+
+msgid "Get the workflows of a project: each workflow's statuses (with local names), transition matrix, accepted task types (types) and the project's default task type for it (default_type_slug, null when not set). Requires project membership."
+msgstr ""
+
+msgid "List global task statuses. Pass workflow_id to also get that workflow's statuses (with local names), transition matrix and accepted task types."
 msgstr ""

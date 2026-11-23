@@ -21,14 +21,17 @@ return array(
     // rely on — pmSprint::canEdit(array $project_ids) (any-of over the
     // projects) and the 4-argument
     // pmSprint::save($data, $project_ids, $workflow_items, $fill_status_ids) —
-    // first appeared in 0.26.0, but the requirement is pinned to 0.50.0, the
-    // version this plugin is developed and tested against. On an older pm
-    // either the sprint write tools would fatal immediately, or a task
-    // created without a sprint would land on a nullable column and go
-    // invisible to pm's own IS NULL-based backlog queries, so the
-    // requirement is strict rather than advisory.
+    // first appeared in 0.26.0. On an older pm either the sprint write tools
+    // would fatal immediately, or a task created without a sprint would land
+    // on a nullable column and go invisible to pm's own IS NULL-based backlog
+    // queries, so the requirement is strict rather than advisory.
+    //
+    // The per-project default task type of a workflow
+    // (pm_project_workflows.default_type_slug, used by pm_get_workflow,
+    // pm_get_project and pm_create_task — PMCP-693) appeared in 0.75.0; the
+    // floor is the 1.0.0 release this plugin is developed and tested against.
     'app.pm'  => array(
-        'version' => '>=0.50.0',
+        'version' => '>=1.0.0',
         'strict'  => true,
     ),
     'php'     => array(
